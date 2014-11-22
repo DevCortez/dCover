@@ -11,7 +11,7 @@ namespace dCover.Geral
 	{		
 		public List<CoveragePoint> coveragePointList = new List<CoveragePoint>();
 		public List<SourceFolder> sourceFolders = new List<SourceFolder>();
-		public List<string> moduleFiles = new List<string>();
+		public List<ProjectModule> moduleFiles = new List<ProjectModule>();
 
 		public void SaveToFile(string fileName)
 		{
@@ -25,14 +25,9 @@ namespace dCover.Geral
 			foreach (SourceFolder x in sourceFolders)
 			{
 				XElement sourceNode = new XElement("source");
-				XElement moduleNode = new XElement("module");
-				XElement pathNode = new XElement("path");
+				sourceNode.SetAttributeValue("module", x.moduleName);
+				sourceNode.SetAttributeValue("path", x.path);
 
-				moduleNode.Value = x.moduleName;
-				pathNode.Value = x.path;
-
-				sourceNode.Add(moduleNode);
-				sourceNode.Add(pathNode);
 				sourceFoldersNode.Add(sourceNode);
 			}			
 			#endregion
@@ -41,14 +36,17 @@ namespace dCover.Geral
 			XElement moduleFilesNode = new XElement("moduleFiles");
 			fileBuffer.Element("coverage").Add(moduleFilesNode);
 
-			foreach (string x in moduleFiles)
+			foreach (ProjectModule x in moduleFiles)
 			{
 				XElement moduleNode = new XElement("module");
-				XElement moduleMD5 = new XElement("hash");
-
-				moduleNode.Value = x;
+				moduleNode.SetAttributeValue("file", x.moduleName);
+				moduleNode.SetAttributeValue("hash", x.hash);
+				moduleNode.SetAttributeValue("active", x.isActive);
+				moduleNode.SetAttributeValue("host", x.host);
+				moduleNode.SetAttributeValue("param", x.parameters);
+				moduleNode.SetAttributeValue("service", x.isService);			
+				
 				moduleFilesNode.Add(moduleNode);
-				moduleFilesNode.Add(moduleMD5);
 			}
 			#endregion
 
@@ -77,16 +75,29 @@ namespace dCover.Geral
 		{
 			XDocument fileBuffer = XDocument.Load(fileName);
 
+			#region Loading sources
 			foreach(XElement x in fileBuffer.Descendants("source"))
 			{
-				sourceFolders.Add(new SourceFolder(x.Element("module").Value, x.Element("path").Value));
+				sourceFolders.Add(new SourceFolder(x.Attribute("module").Value, x.Attribute("path").Value));
 			}
+			#endregion
 
-			foreach(XElement x in fileBuffer.Descendants("moduleFiles"))
+			#region Loading module list
+			foreach(XElement x in fileBuffer.Descendants("module"))
 			{
-				moduleFiles.Add(x.Element("module").Value);
-			}
+				ProjectModule projectModule = new ProjectModule();
+				projectModule.moduleName = x.Attribute("file").Value;
+				projectModule.hash = x.Attribute("hash").Value;
+				projectModule.host = x.Attribute("host").Value;
+				projectModule.isActive = Convert.ToBoolean(x.Attribute("active").Value);
+				projectModule.isService = Convert.ToBoolean(x.Attribute("service").Value);
+				projectModule.parameters = x.Attribute("param").Value;
 
+				moduleFiles.Add(projectModule);
+			}
+			#endregion
+
+			#region Loading coverage points
 			foreach(XElement x in fileBuffer.Descendants("p"))
 			{
 				CoveragePoint coveragePoint = new CoveragePoint();
@@ -99,6 +110,7 @@ namespace dCover.Geral
 
 				coveragePointList.Add(coveragePoint);
 			}
+			#endregion
 		}
 	}
 
@@ -112,5 +124,17 @@ namespace dCover.Geral
 			moduleName = _moduleName;
 			path = _path;
 		}
+	}
+
+	public class ProjectModule
+	{
+		public string moduleName;
+		public string hash = ""; //Remove initialization after complete implementation
+		public string host = "";
+		public string parameters = "";		
+		public bool   isActive = true;
+		public bool   isService = false;
+
+		public int baseAddress = 0x400000; //By default, but will be dynamic
 	}
 }

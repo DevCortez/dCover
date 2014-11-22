@@ -20,7 +20,8 @@
     <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
+    <WarningLevel>1</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -52,6 +53,7 @@
     </Compile>
     <Compile Include="Geral\CoveragePoint.cs" />
     <Compile Include="Geral\MapParser.cs" />
+    <Compile Include="Geral\ProjectProcess.cs" />
     <Compile Include="Geral\Project.cs" />
     <Compile Include="Geral\ProjectLoader.cs" />
     <Compile Include="Geral\SourceParser.cs" />

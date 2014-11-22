@@ -105,7 +105,7 @@ namespace dCover.Geral
 
 			string moduleFileName = getModuleFileName(mainSourceFile);
 
-			if((from string x in project.moduleFiles where x.Contains(moduleFileName) select x).FirstOrDefault() != null)
+			if((from ProjectModule x in project.moduleFiles where x.moduleName.Contains(moduleFileName) select x).FirstOrDefault() != null)
 				return false;
 
 			updateModuleName(coveragePoints, moduleFileName);									
@@ -113,7 +113,11 @@ namespace dCover.Geral
 			string moduleFile = recursiveFileSearch(moduleFileName, rootProjectPath);
 
 			if(moduleFile != null)
-				project.moduleFiles.Add(moduleFile);
+				{
+					ProjectModule projectModule = new ProjectModule();
+					projectModule.moduleName = moduleFile;
+					project.moduleFiles.Add(projectModule);
+				}
 
 			project.sourceFolders.Add(new SourceFolder(moduleFileName, rootProjectPath));
 

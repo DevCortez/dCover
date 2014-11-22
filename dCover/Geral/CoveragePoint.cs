@@ -13,15 +13,9 @@ namespace dCover.Geral
 		public string sourceFile;
 		public string routineName;
 		public string moduleName;
-		public bool wasCovered;		
+		public bool wasCovered = false;	
 
 		public byte originalCode;
-		public bool isSet;
-
-		public CoveragePoint()
-		{
-			wasCovered = false;
-			isSet = false;
-		}
+		public bool isSet = false;
 	}
 }
