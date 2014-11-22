@@ -53,7 +53,7 @@ namespace dCover.Geral
 				x.moduleName = moduleName;
 		}
 		
-		public static bool LoadProject(Project project, bool silent = false)
+		public static bool LoadNewDelphiProject(Project project, bool silent = false)
 		{
 			#region Loading map file
 			OpenFileDialog mapDialog = new OpenFileDialog();

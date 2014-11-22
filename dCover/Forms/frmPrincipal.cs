@@ -22,9 +22,13 @@ namespace dCover.Forms
 
 		private void button1_Click(object sender, EventArgs e)
 		{
-			ProjectLoader.LoadProject(project);
+			ProjectLoader.LoadNewDelphiProject(project);
 			project.SaveToFile(@"d:\projeto.xml");
-			//MapParser.Parse("D:\\Projetos\\Dummy_Coverage\\Project1.map").Select(x => x.sourceFile).Distinct().First();
+		}
+
+		private void frmPrincipal_Load(object sender, EventArgs e)
+		{
+			project.LoadFromFile(@"d:\projeto.xml");
 		}
 	}
 }

@@ -44,9 +44,11 @@ namespace dCover.Geral
 			foreach (string x in moduleFiles)
 			{
 				XElement moduleNode = new XElement("module");
+				XElement moduleMD5 = new XElement("hash");
 
 				moduleNode.Value = x;
 				moduleFilesNode.Add(moduleNode);
+				moduleFilesNode.Add(moduleMD5);
 			}
 			#endregion
 
@@ -69,6 +71,34 @@ namespace dCover.Geral
 			#endregion
 
 			fileBuffer.Save(fileName);
+		}
+
+		public void LoadFromFile(string fileName)
+		{
+			XDocument fileBuffer = XDocument.Load(fileName);
+
+			foreach(XElement x in fileBuffer.Descendants("source"))
+			{
+				sourceFolders.Add(new SourceFolder(x.Element("module").Value, x.Element("path").Value));
+			}
+
+			foreach(XElement x in fileBuffer.Descendants("moduleFiles"))
+			{
+				moduleFiles.Add(x.Element("module").Value);
+			}
+
+			foreach(XElement x in fileBuffer.Descendants("p"))
+			{
+				CoveragePoint coveragePoint = new CoveragePoint();
+				coveragePoint.wasCovered = Convert.ToBoolean(x.Attribute("c").Value);
+				coveragePoint.sourceFile = x.Attribute("s").Value;
+				coveragePoint.routineName = x.Attribute("n").Value;
+				coveragePoint.offset = Convert.ToInt32(x.Attribute("o").Value);
+				coveragePoint.lineNumber = Convert.ToInt32(x.Attribute("l").Value);
+				coveragePoint.moduleName = x.Attribute("m").Value;
+
+				coveragePointList.Add(coveragePoint);
+			}
 		}
 	}
 
