@@ -53,7 +53,7 @@
     <Compile Include="Geral\CoveragePoint.cs" />
     <Compile Include="Geral\MapParser.cs" />
     <Compile Include="Geral\ProjectLoader.cs" />
-    <Compile Include="Geral\SourceFilter.cs" />
+    <Compile Include="Geral\SourceParser.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="Forms\frmPrincipal.resx">

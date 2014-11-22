@@ -11,6 +11,23 @@ namespace dCover.Geral
 {
 	class ProjectLoader
 	{
+		private static string getModuleFileName(string mainSourceFile)
+		{
+			if(mainSourceFile.ToLower().Contains(".dpk"))
+				return Path.ChangeExtension(Path.GetFileName(mainSourceFile), ".bpl");
+
+			string sourceCode = File.ReadAllText(mainSourceFile).ToLower();
+			sourceCode = sourceCode.Remove( Regex.Match(sourceCode, @"\;").Index );
+
+			if (sourceCode.Contains("library"))
+				return Path.ChangeExtension(Path.GetFileName(mainSourceFile), ".dll");
+
+			if (sourceCode.Contains("program"))
+				return Path.ChangeExtension(Path.GetFileName(mainSourceFile), ".exe");
+
+			return null;
+		}
+		
 		private static string recursiveFileSearch(string fileName, string filePath, int maxDepth = 2)
 		{
 			string foundFile = Directory.GetFiles(filePath, fileName).FirstOrDefault();
@@ -29,6 +46,12 @@ namespace dCover.Geral
 			
 			return null;
 		}
+
+		private static void updateModuleName(IEnumerable<CoveragePoint> points, string moduleName)
+		{
+			foreach(CoveragePoint x in points)
+				x.moduleName = moduleName;
+		}
 		
 		public static IEnumerable<CoveragePoint> LoadProject(bool silent = false)
 		{
@@ -45,7 +68,7 @@ namespace dCover.Geral
 			List<CoveragePoint> coveragePoints = MapParser.Parse(mapDialog.FileName).ToList();
 			#endregion
 
-			#region Load source and clean coverage points
+			#region Load source and clean up coverage points
 			string mainSourceFileName = coveragePoints.Where(x => Regex.IsMatch(x.sourceFile, @"\.dp[rk]")).First().sourceFile;
 			string mainSourceFile = recursiveFileSearch(mainSourceFileName, rootProjectPath);
 
@@ -79,8 +102,10 @@ namespace dCover.Geral
 				coveragePoints = SourceParser.FilterCoveragePoints(coveragePoints, currentSourceFile).ToList();
 			}
 			#endregion
+
+			updateModuleName(coveragePoints, getModuleFileName(mainSourceFile));			
 			
-			foreach(CoveragePoint x in coveragePoints)
+			foreach(CoveragePoint x in coveragePoints.OrderBy(y => y.lineNumber).ToList())
 				Console.WriteLine(x.lineNumber + " " + x.sourceFile);
 
 			return coveragePoints;
