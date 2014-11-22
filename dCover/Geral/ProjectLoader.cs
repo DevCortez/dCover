@@ -53,7 +53,7 @@ namespace dCover.Geral
 				x.moduleName = moduleName;
 		}
 		
-		public static IEnumerable<CoveragePoint> LoadProject(bool silent = false)
+		public static bool LoadProject(Project project, bool silent = false)
 		{
 			#region Loading map file
 			OpenFileDialog mapDialog = new OpenFileDialog();
@@ -61,7 +61,7 @@ namespace dCover.Geral
 			mapDialog.Filter = "Detailed map file (.map)|*.map";
 			
 			if(mapDialog.ShowDialog() != DialogResult.OK)
-				return null;
+				return false;
 
 			string rootProjectPath = Regex.Match(mapDialog.FileName, @"(.\:(.+\\)*)(.+\..+)").Groups[1].Value;
 
@@ -79,36 +79,48 @@ namespace dCover.Geral
 				sourceDialog.CheckFileExists = true;
 				
 				if(sourceDialog.ShowDialog() != DialogResult.OK)
-					return null;
+					return false;
 
 				mainSourceFile = sourceDialog.FileName;
 			}
 
-			string projectRootPath = Regex.Match(mainSourceFile, @"(.\:(.+\\)*)(.+\..+)").Groups[1].Value;
+			rootProjectPath = Regex.Match(mainSourceFile, @"(.\:(.+\\)*)(.+\..+)").Groups[1].Value;
 			
 			foreach(string currentFile in coveragePoints.Select(x => x.sourceFile).Distinct())
 			{
-				string currentSourceFile = recursiveFileSearch(currentFile, projectRootPath, 5);
+				string currentSourceFile = recursiveFileSearch(currentFile, rootProjectPath, 5);
 
 				if(currentSourceFile == null)
 					if(silent)
-						return null;
+						return false;
 					else
 					{
-						MessageBox.Show(currentFile + " not found in " + projectRootPath);
-						return null;
+						MessageBox.Show(currentFile + " not found in " + rootProjectPath);
+						return false;
 					}
 
 				coveragePoints = SourceParser.FilterCoveragePoints(coveragePoints, currentSourceFile).ToList();
 			}
 			#endregion
 
-			updateModuleName(coveragePoints, getModuleFileName(mainSourceFile));			
-			
+			string moduleFileName = getModuleFileName(mainSourceFile);
+
+			if((from string x in project.moduleFiles where x.Contains(moduleFileName) select x).FirstOrDefault() != null)
+				return false;
+
+			updateModuleName(coveragePoints, moduleFileName);									
+			project.coveragePointList.AddRange(coveragePoints);
+			string moduleFile = recursiveFileSearch(moduleFileName, rootProjectPath);
+
+			if(moduleFile != null)
+				project.moduleFiles.Add(moduleFile);
+
+			project.sourceFolders.Add(new SourceFolder(moduleFileName, rootProjectPath));
+
 			foreach(CoveragePoint x in coveragePoints.OrderBy(y => y.lineNumber).ToList())
 				Console.WriteLine(x.lineNumber + " " + x.sourceFile);
 
-			return coveragePoints;
+			return true;
 		}
 	}
 }

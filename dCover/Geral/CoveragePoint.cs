@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace dCover.Geral
 {
-	class CoveragePoint
+	public class CoveragePoint
 	{
 		public int lineNumber;
 		public int offset;

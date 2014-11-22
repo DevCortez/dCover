@@ -13,6 +13,8 @@ namespace dCover.Forms
 {
 	public partial class frmPrincipal : Form
 	{
+		private Project project = new Project();
+		
 		public frmPrincipal()
 		{
 			InitializeComponent();
@@ -20,7 +22,7 @@ namespace dCover.Forms
 
 		private void button1_Click(object sender, EventArgs e)
 		{
-			ProjectLoader.LoadProject();
+			ProjectLoader.LoadProject(project);
 			//MapParser.Parse("D:\\Projetos\\Dummy_Coverage\\Project1.map").Select(x => x.sourceFile).Distinct().First();
 		}
 	}
