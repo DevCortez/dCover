@@ -23,14 +23,26 @@ namespace dCover.Forms
 		private void button1_Click(object sender, EventArgs e)
 		{
 			ProjectLoader.LoadNewDelphiProject(project);
-			project.SaveToFile(@"d:\projeto.xml");
+			
 			ProjectProcess proc = new ProjectProcess();
-			proc.CreateProcess(null);
+			proc.CreateProcess(project.moduleFiles.First(), project);
+
+            project.SaveToFile(@"c:\projeto_bacon.xml");
 		}
 
 		private void frmPrincipal_Load(object sender, EventArgs e)
 		{
-			project.LoadFromFile(@"d:\projeto.xml");
+			project.LoadFromFile(@"c:\projeto.xml");
 		}
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            project.SaveToFile(@"c:\projeto_bacon.xml");
+        }
+
+        private void frmPrincipal_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            Environment.Exit(0);
+        }
 	}
 }

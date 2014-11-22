@@ -13,7 +13,9 @@ namespace dCover.Geral
 {
 	class ProjectProcess
 	{
-		const int EXCEPTION_DEBUG_EVENT = 1;
+        const uint SECTION_OFFSET = 0x1000;
+        
+        const int EXCEPTION_DEBUG_EVENT = 1;
 		const int CREATE_THREAD_DEBUG_EVENT = 2;
 		const int CREATE_PROCESS_DEBUG_EVENT = 3;
 		const int EXIT_THREAD_DEBUG_EVENT = 4;
@@ -28,6 +30,7 @@ namespace dCover.Geral
 		STARTUPINFO startupInfo = new STARTUPINFO();
 		PROCESS_INFORMATION processInformation = new PROCESS_INFORMATION();
 		private ProjectModule module;
+        private Project mainProject;
 
 		public bool status { get{ return debuggingThread == null ? true : debuggingThread.IsAlive; } }
 
@@ -36,9 +39,8 @@ namespace dCover.Geral
 
 		void debuggingLoop()
 		{
-			CreateProcess(@"D:\Projetos\Dummy_Coverage\Project1.exe", null, 0, 0, false, 2, 0, null, ref startupInfo, out processInformation);
-			
-			uint continueStatus;
+            uint continueStatus;
+            CreateProcess(module.moduleFile, null, 0, 0, false, 2, 0, null, ref startupInfo, out processInformation);
 			
 			while(status)
 			{
@@ -56,14 +58,23 @@ namespace dCover.Geral
 							break;
 						}
 
-					case EXCEPTION_DEBUG_EVENT:
+					default: //Could be reverted
 						{
 							if(debugEvent.Exception.ExceptionRecord.ExceptionCode != STATUS_BREAKPOINT)
 							{
 								continueStatus = 0x80010001;
 								break;
 							}
-							//Handle breakpoint here
+                            CoveragePoint currentPoint = mainProject.coveragePointList.Where(x => x.offset + module.baseAddress + SECTION_OFFSET == debugEvent.Exception.ExceptionRecord.ExceptionAddress).FirstOrDefault();
+
+                            Console.WriteLine("Event at " + debugEvent.Exception.ExceptionRecord.ExceptionAddress.ToString("X4"));
+                            
+                            if(currentPoint != null)
+                            {
+                                Console.WriteLine(currentPoint.lineNumber + " -> " + currentPoint.sourceFile + " @ " + currentPoint.routineName);
+                                currentPoint.wasCovered = true;
+                            }
+                            
 							break;
 						}
 				}
@@ -72,11 +83,12 @@ namespace dCover.Geral
 			}
 		}
 
-		public bool CreateProcess(ProjectModule targetModule)
+		public bool CreateProcess(ProjectModule targetModule, Project project)
 		{
 			startupInfo.cb = (uint)System.Runtime.InteropServices.Marshal.SizeOf(startupInfo);
 			startupInfo.dwFlags = 1;
 			module = targetModule;
+            mainProject = project;
 
 			debuggingThread = new Thread(new ThreadStart(debuggingLoop));
 			debuggingThread.Start();

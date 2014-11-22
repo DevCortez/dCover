@@ -88,7 +88,7 @@ namespace dCover.Geral
 			
 			foreach(string currentFile in coveragePoints.Select(x => x.sourceFile).Distinct())
 			{
-				string currentSourceFile = recursiveFileSearch(currentFile, rootProjectPath, 5);
+				string currentSourceFile = recursiveFileSearch(currentFile, rootProjectPath + @"..\", 5);
 
 				if(currentSourceFile == null)
 					if(silent)
@@ -105,9 +105,11 @@ namespace dCover.Geral
 
 			string moduleFileName = getModuleFileName(mainSourceFile);
 
-			if((from ProjectModule x in project.moduleFiles where x.moduleName.Contains(moduleFileName) select x).FirstOrDefault() != null)
+			if((from ProjectModule x in project.moduleFiles where x.moduleFile.Contains(moduleFileName) select x).FirstOrDefault() != null)
 				return false;
 
+            coveragePoints.Remove(coveragePoints.Where(x => x.sourceFile == mainSourceFileName).OrderBy(x => x.lineNumber).First());
+            
 			updateModuleName(coveragePoints, moduleFileName);									
 			project.coveragePointList.AddRange(coveragePoints);
 			string moduleFile = recursiveFileSearch(moduleFileName, rootProjectPath);
@@ -115,11 +117,12 @@ namespace dCover.Geral
 			if(moduleFile != null)
 				{
 					ProjectModule projectModule = new ProjectModule();
-					projectModule.moduleName = moduleFile;
+					projectModule.moduleFile = moduleFile;
 					project.moduleFiles.Add(projectModule);
 				}
 
-			project.sourceFolders.Add(new SourceFolder(moduleFileName, rootProjectPath));
+			
+            project.sourceFolders.Add(new SourceFolder(moduleFileName, rootProjectPath));
 
 			foreach(CoveragePoint x in coveragePoints.OrderBy(y => y.lineNumber).ToList())
 				Console.WriteLine(x.lineNumber + " " + x.sourceFile);

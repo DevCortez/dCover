@@ -45,10 +45,10 @@ namespace dCover.Geral
 
 			string mapFile = File.ReadAllText(fileName);
 
-			foreach(Match lines in Regex.Matches(mapFile, @"Line numbers for [^\(]*\(([^ \)]*)"))
+			foreach(Match lines in Regex.Matches(mapFile, @"Line numbers for [^\(]*\(([^\)]*)"))
 			{
 				int pointsSection = lines.Index + 1;
-				string sourceFileName = Regex.Match(lines.Groups[1].Value, @"(.+\\)*(.+\..+)$").Groups[2].Value.ToLower();
+				string sourceFileName = Regex.Match(lines.Groups[1].Value.ToLower(), @"(.+\\)*(.+\..+)").Groups[2].Value.ToLower();
 
 				string currentSection = mapFile.Substring(pointsSection, mapFile.Length - pointsSection);
 				

@@ -39,7 +39,7 @@ namespace dCover.Geral
 			foreach (ProjectModule x in moduleFiles)
 			{
 				XElement moduleNode = new XElement("module");
-				moduleNode.SetAttributeValue("file", x.moduleName);
+				moduleNode.SetAttributeValue("file", x.moduleFile);
 				moduleNode.SetAttributeValue("hash", x.hash);
 				moduleNode.SetAttributeValue("active", x.isActive);
 				moduleNode.SetAttributeValue("host", x.host);
@@ -86,7 +86,7 @@ namespace dCover.Geral
 			foreach(XElement x in fileBuffer.Descendants("module"))
 			{
 				ProjectModule projectModule = new ProjectModule();
-				projectModule.moduleName = x.Attribute("file").Value;
+				projectModule.moduleFile = x.Attribute("file").Value;
 				projectModule.hash = x.Attribute("hash").Value;
 				projectModule.host = x.Attribute("host").Value;
 				projectModule.isActive = Convert.ToBoolean(x.Attribute("active").Value);
@@ -128,7 +128,7 @@ namespace dCover.Geral
 
 	public class ProjectModule
 	{
-		public string moduleName;
+		public string moduleFile;
 		public string hash = ""; //Remove initialization after complete implementation
 		public string host = "";
 		public string parameters = "";		
