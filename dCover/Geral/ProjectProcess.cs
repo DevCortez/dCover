@@ -13,26 +13,75 @@ namespace dCover.Geral
 {
 	class ProjectProcess
 	{
-		private Thread debuggingThread = null;
+		const int EXCEPTION_DEBUG_EVENT = 1;
+		const int CREATE_THREAD_DEBUG_EVENT = 2;
+		const int CREATE_PROCESS_DEBUG_EVENT = 3;
+		const int EXIT_THREAD_DEBUG_EVENT = 4;
+		const int EXIT_PROCESS_DEBUG_EVENT = 5;
+		const int LOAD_DLL_DEBUG_EVENT = 6;
+		const int UNLOAD_DLL_DEBUG_EVENT = 7;
+		const int OUTPUT_DEBUG_STRING_EVENT = 8;
+		const int RIP_EVENT = 9;
+		const uint STATUS_BREAKPOINT = 0x80000003;
 		
+		private Thread debuggingThread = null;
+		STARTUPINFO startupInfo = new STARTUPINFO();
+		PROCESS_INFORMATION processInformation = new PROCESS_INFORMATION();
+		private ProjectModule module;
+
 		public bool status { get{ return debuggingThread == null ? true : debuggingThread.IsAlive; } }
+
+
+
 
 		void debuggingLoop()
 		{
+			CreateProcess(@"D:\Projetos\Dummy_Coverage\Project1.exe", null, 0, 0, false, 2, 0, null, ref startupInfo, out processInformation);
+			
+			uint continueStatus;
+			
 			while(status)
 			{
-				DEBUG_EVENT debugEvent;
-				WaitForDebugEvent(out debugEvent, 0xFFFFFFFF);
+				DEBUG_EVENT debugEvent = new DEBUG_EVENT();
 
+				if(!WaitForDebugEvent(out debugEvent, 0xFFFFFFFF))
+					continue;
+
+				continueStatus = 0x00010002;
+				
 				switch(debugEvent.dwDebugEventCode)
 				{
+					case CREATE_PROCESS_DEBUG_EVENT:
+						{
+							break;
+						}
+
+					case EXCEPTION_DEBUG_EVENT:
+						{
+							if(debugEvent.Exception.ExceptionRecord.ExceptionCode != STATUS_BREAKPOINT)
+							{
+								continueStatus = 0x80010001;
+								break;
+							}
+							//Handle breakpoint here
+							break;
+						}
 				}
+
+				ContinueDebugEvent(debugEvent.dwProcessId, debugEvent.dwThreadId, continueStatus);
 			}
 		}
 
-		public bool CreateProcess(ProjectModule module)
+		public bool CreateProcess(ProjectModule targetModule)
 		{
+			startupInfo.cb = (uint)System.Runtime.InteropServices.Marshal.SizeOf(startupInfo);
+			startupInfo.dwFlags = 1;
+			module = targetModule;
 
+			debuggingThread = new Thread(new ThreadStart(debuggingLoop));
+			debuggingThread.Start();
+		
+			ResumeThread(processInformation.hThread);
 			return true;
 		}
 
@@ -53,8 +102,8 @@ namespace dCover.Geral
 		private unsafe struct DEBUG_EVENT
 		{
 			public readonly uint dwDebugEventCode;
-			public readonly int dwProcessId;
-			public readonly int dwThreadId;
+			public readonly uint dwProcessId;
+			public readonly uint dwThreadId;
 
 
 			[MarshalAs(UnmanagedType.ByValArray, SizeConst = 86, ArraySubType = UnmanagedType.U1)]
@@ -107,14 +156,9 @@ namespace dCover.Geral
 		{
 			public readonly uint ExceptionCode;
 			public readonly uint ExceptionFlags;
-			public readonly IntPtr ExceptionRecord;
-			public readonly IntPtr ExceptionAddress;
+			public readonly uint ExceptionRecord;
+			public readonly uint ExceptionAddress;
 			public readonly uint NumberParameters;
-
-
-			//[MarshalAs(UnmanagedType.ByValArray, SizeConst = 15, ArraySubType = UnmanagedType.U4)]
-			//public readonly uint[] ExceptionInformation;
-
 
 			public unsafe fixed uint ExceptionInformation[15];
 		}
@@ -131,11 +175,6 @@ namespace dCover.Geral
 			public uint DataOffset;
 			public uint DataSelector;
 
-
-			//[MarshalAs(UnmanagedType.ByValArray, SizeConst = 80)]
-			//public byte[] RegisterArea;
-
-
 			public unsafe fixed byte RegisterArea[80];
 
 
@@ -146,11 +185,11 @@ namespace dCover.Geral
 		[StructLayout(LayoutKind.Sequential)]
 		private struct LOAD_DLL_DEBUG_INFO
 		{
-			public readonly IntPtr hFile;
-			public readonly IntPtr lpBaseOfDll;
+			public readonly uint hFile;
+			public readonly uint lpBaseOfDll;
 			public readonly uint dwDebugInfoFileOffset;
 			public readonly uint nDebugInfoSize;
-			public readonly IntPtr lpImageName;
+			public readonly uint lpImageName;
 			public readonly ushort fUnicode;
 		}
 
@@ -205,48 +244,89 @@ namespace dCover.Geral
 			public byte[] ExtendedRegisters;
 		}
 
+		public struct PROCESS_INFORMATION
+		{
+			public uint hProcess;
+			public uint hThread;
+			public uint dwProcessId;
+			public uint dwThreadId;
+		}
+
+		public struct STARTUPINFO
+		{
+			public uint cb;
+			public string lpReserved;
+			public string lpDesktop;
+			public string lpTitle;
+			public uint dwX;
+			public uint dwY;
+			public uint dwXSize;
+			public uint dwYSize;
+			public uint dwXCountChars;
+			public uint dwYCountChars;
+			public uint dwFillAttribute;
+			public uint dwFlags;
+			public short wShowWindow;
+			public short cbReserved2;
+			public uint lpReserved2;
+			public uint hStdInput;
+			public uint hStdOutput;
+			public uint hStdError;
+		}
+
+		public struct SECURITY_ATTRIBUTES
+		{
+			public int length;
+			public uint lpSecurityDescriptor;
+			public bool bInheritHandle;
+		}
+
+
 
 		#endregion
 
 		#region Imports
 
 		[DllImport("kernel32.dll")]
-		private static extern IntPtr OpenThread(uint dwDesiredAccess, bool bInheritHandle,
+		private static extern uint OpenThread(uint dwDesiredAccess, bool bInheritHandle,
+			uint dwThreadId);
+
+		[DllImport("kernel32.dll")]
+		private static extern uint GetLastError();
+
+
+		[DllImport("kernel32.dll")]
+		private static extern uint OpenProcess(uint dwDesiredAccess, bool bInheritHandle,
 			uint dwThreadId);
 
 
 		[DllImport("kernel32.dll")]
-		private static extern IntPtr OpenProcess(uint dwDesiredAccess, bool bInheritHandle,
-			uint dwThreadId);
+		private static extern bool Thread32First(uint hSnapshot, ref THREADENTRY32 lpte);
 
 
 		[DllImport("kernel32.dll")]
-		private static extern bool Thread32First(IntPtr hSnapshot, ref THREADENTRY32 lpte);
-
-
-		[DllImport("kernel32.dll")]
-		private static extern bool Thread32Next(IntPtr hSnapshot, out THREADENTRY32 lpte);
+		private static extern bool Thread32Next(uint hSnapshot, out THREADENTRY32 lpte);
 
 
 		[DllImport("kernel32.dll", SetLastError = true)]
-		private static extern IntPtr CreateToolhelp32Snapshot(int dwFlags, uint th32ProcessID);
+		private static extern uint CreateToolhelp32Snapshot(int dwFlags, uint th32ProcessID);
 
 
 		[DllImport("kernel32.dll")]
-		private static extern uint SuspendThread(IntPtr hThread);
+		private static extern uint SuspendThread(uint hThread);
 
 
 		[DllImport("kernel32.dll")]
-		private static extern bool GetThreadContext(IntPtr hThread, ref ThreadContext lpContext);
+		private static extern bool GetThreadContext(uint hThread, ref ThreadContext lpContext);
 
 
 		[DllImport("kernel32.dll")]
-		private static extern bool SetThreadContext(IntPtr hThread,
+		private static extern bool SetThreadContext(uint hThread,
 			[In] ref ThreadContext lpContext);
 
 
 		[DllImport("kernel32.dll")]
-		private static extern uint ResumeThread(IntPtr hThread);
+		private static extern uint ResumeThread(uint hThread);
 
 
 		[DllImport("kernel32.dll")]
@@ -269,7 +349,12 @@ namespace dCover.Geral
 
 		[DllImport("kernel32.dll", SetLastError = true)]
 		[return: MarshalAs(UnmanagedType.Bool)]
-		private static extern bool CloseHandle(IntPtr hObject);
+		private static extern bool CloseHandle(uint hObject);
+
+		[DllImport("kernel32.dll")]
+		static extern bool CreateProcess(string lpApplicationName, string lpCommandLine, uint lpProcessAttributes, uint lpThreadAttributes,
+								bool bInheritHandles, uint dwCreationFlags, uint lpEnvironment,
+								string lpCurrentDirectory, ref STARTUPINFO lpStartupInfo, out PROCESS_INFORMATION lpProcessInformation);
 	}
 	#endregion
 
@@ -289,7 +374,7 @@ namespace dCover.Geral
 		private bool _disposed;
 
 
-		public ExternalProcessHook(MemoryBase memory, HookRegister register, IntPtr hookLocation,
+		public ExternalProcessHook(MemoryBase memory, HookRegister register, uint hookLocation,
 			HandleHookCallback callback)
 		{
 			var i = new HookItem { Callback = callback, Location = hookLocation, Register = register };
@@ -340,7 +425,7 @@ namespace dCover.Geral
 			te.dwSize = 28; // sizeof(THREADENTRY32)
 
 
-			IntPtr hSnapshot = CreateToolhelp32Snapshot(4, 0);
+			uint hSnapshot = CreateToolhelp32Snapshot(4, 0);
 
 
 			if (Thread32First(hSnapshot, ref te) && Thread32Next(hSnapshot, out te))
@@ -357,7 +442,7 @@ namespace dCover.Geral
 		}
 
 
-		private static void SetDebugRegisters(HookRegister register, IntPtr hookLocation, ref ThreadContext ct, bool remove)
+		private static void SetDebugRegisters(HookRegister register, uint hookLocation, ref ThreadContext ct, bool remove)
 		{
 			if (remove)
 			{
@@ -413,7 +498,7 @@ namespace dCover.Geral
 		{
 			var ctx = new ThreadContext();
 			ctx.ContextFlags = 65559;
-			foreach (IntPtr openThreadHandle in OpenThreadHandles)
+			foreach (uint openThreadHandle in OpenThreadHandles)
 			{
 				SuspendThread(openThreadHandle);
 				GetThreadContext(openThreadHandle, ref ctx);
@@ -482,7 +567,7 @@ namespace dCover.Geral
 					else
 					{
 						// Re-open the thread so we can get the context info we need.
-						IntPtr hThread = OpenThread(0x1FFFFFu, false, (uint)evt.dwThreadId);
+						uint hThread = OpenThread(0x1FFFFFu, false, (uint)evt.dwThreadId);
 
 
 						GetThreadContext(hThread, ref ctx);
@@ -552,7 +637,7 @@ namespace dCover.Geral
 		{
 			public HandleHookCallback Callback;
 			public bool Hooked;
-			public IntPtr Location;
+			public uint Location;
 			public HookRegister Register;
 		}
 	}*/

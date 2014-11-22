@@ -24,6 +24,8 @@ namespace dCover.Forms
 		{
 			ProjectLoader.LoadNewDelphiProject(project);
 			project.SaveToFile(@"d:\projeto.xml");
+			ProjectProcess proc = new ProjectProcess();
+			proc.CreateProcess(null);
 		}
 
 		private void frmPrincipal_Load(object sender, EventArgs e)
