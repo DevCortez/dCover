@@ -20,7 +20,8 @@ namespace dCover.Forms
 
 		private void button1_Click(object sender, EventArgs e)
 		{
-			MapParser.Parse("D:\\Projetos\\Dummy_Coverage\\Project1.map");
+			ProjectLoader.LoadProject();
+			//MapParser.Parse("D:\\Projetos\\Dummy_Coverage\\Project1.map").Select(x => x.sourceFile).Distinct().First();
 		}
 	}
 }

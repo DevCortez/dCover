@@ -10,6 +10,12 @@ namespace dCover.Geral
 {
 	class MapParser
 	{
+		private class FunctionName
+		{
+			public string name;
+			public int offset;
+		}
+		
 		private static IEnumerable<FunctionName> getFunctionNames(string fileName)
 		{
 			List<FunctionName> functionNames = new List<FunctionName>();
@@ -65,26 +71,20 @@ namespace dCover.Geral
 			return coveragePoints;
 		}
 
-		public static void setFunctionNames(IEnumerable<CoveragePoint> points, IEnumerable<FunctionName> names)
+		private static void setFunctionNames(IEnumerable<CoveragePoint> points, IEnumerable<FunctionName> names)
 		{
 			foreach(CoveragePoint currentPoint in points)
 				currentPoint.routineName = (from x in names where currentPoint.offset >= x.offset select x).First().name;
 		}
-		
+
 		public static IEnumerable<CoveragePoint> Parse(string fileName)
 		{
 			List<CoveragePoint> coveragePoints = new List<CoveragePoint>();
 
 			coveragePoints = getCoveragePoints(fileName).ToList();			
-			setFunctionNames(coveragePoints, getFunctionNames(fileName));						
-		
+			setFunctionNames(coveragePoints, getFunctionNames(fileName));
+
 			return coveragePoints;
 		}
-	}
-
-	class FunctionName
-	{
-		public string name;
-		public int offset;
-	}
+	}	
 }
