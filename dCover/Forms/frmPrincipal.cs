@@ -44,5 +44,42 @@ namespace dCover.Forms
         {
             Environment.Exit(0);
         }
+
+		private void openToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			ProjectLoader.LoadNewDelphiProject(project);
+		}
+
+		private void saveWorkspaceToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			SaveFileDialog saveDialog = new SaveFileDialog();
+			saveDialog.Title = "Save workspace to...";
+			saveDialog.Filter = "dCover workspace|*.dcw";
+			saveDialog.CheckPathExists = true;
+			saveDialog.DefaultExt = ".dcw";
+			
+			if(saveDialog.ShowDialog() != DialogResult.OK)
+				return;
+
+			project.SaveToFile(saveDialog.FileName);
+		}
+
+		private void loadWorkspaceToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			OpenFileDialog loadDialog = new OpenFileDialog();
+			loadDialog.Title = "Load workspace";
+			loadDialog.Filter = "dCover workspace|*.dcw";
+			loadDialog.CheckFileExists = true;
+
+			if(loadDialog.ShowDialog() != DialogResult.OK)
+				return;
+
+			project.LoadFromFile(loadDialog.FileName);
+		}
+
+		private void clearWorkspaceToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			project = new Project();
+		}
 	}
 }
