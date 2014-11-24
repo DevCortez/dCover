@@ -88,7 +88,10 @@ namespace dCover.Geral
 			
 			foreach(string currentFile in coveragePoints.Select(x => x.sourceFile).Distinct())
 			{
-				string currentSourceFile = recursiveFileSearch(currentFile, rootProjectPath + @"..\", 5);
+				string currentSourceFile = recursiveFileSearch(currentFile, rootProjectPath, 5);
+
+				if(currentSourceFile == null)
+					currentSourceFile = recursiveFileSearch(currentFile, rootProjectPath + @"..\", 5);
 
 				if(currentSourceFile == null)
 					if(silent)

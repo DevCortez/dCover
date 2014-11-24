@@ -24,11 +24,11 @@ namespace dCover.Geral
 
 		public static IEnumerable<CoveragePoint> FilterCoveragePoints(IEnumerable<CoveragePoint> points, string sourceFile)
 		{
-			string sourceCode = File.ReadAllText(sourceFile).ToLower();
+			string sourceCode = File.ReadAllText(sourceFile);
 			List<Tuple<int, int>> validLines = new List<Tuple<int, int>>();
 			List<CoveragePoint> filteredPoints = new List<CoveragePoint>();
 
-			foreach(Match x in Regex.Matches(sourceCode, @"[^\/\/\n\{]*(begin|if|except|else|do|repeat)\s{1}"))
+			foreach(Match x in Regex.Matches(sourceCode, @"\s{1}(begin|if|except|else|do|repeat)\s{1}", RegexOptions.IgnoreCase))
 			{
 				validLines.Add(Tuple.Create(getLineFromPoint(sourceCode, x.Index), getNextTokenLine(sourceCode, x.Index)));
 			}

@@ -4,6 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
+using System.Threading;
 
 namespace dCover.Geral
 {
@@ -12,6 +15,7 @@ namespace dCover.Geral
 		public List<CoveragePoint> coveragePointList = new List<CoveragePoint>();
 		public List<SourceFolder> sourceFolders = new List<SourceFolder>();
 		public List<ProjectModule> moduleFiles = new List<ProjectModule>();
+		public List<uint> runningProcesses = new List<uint>();
 
 		public void SaveToFile(string fileName)
 		{
@@ -112,6 +116,29 @@ namespace dCover.Geral
 			}
 			#endregion
 		}
+
+		private void processMonitor()
+		{
+			while(true) //Ugly but necessary
+			{
+				foreach(uint x in runningProcesses)
+				{
+					uint exitCode = 0;
+					GetExitCodeProcess(x, ref exitCode);
+
+					if(exitCode != 259)
+					{
+						runningProcesses.Remove(x);
+						Console.WriteLine("Process " + x + " exited with " + exitCode);
+					}
+				}
+
+				Thread.Sleep(100); //Prevent overhead from this thread to improve performance
+			}
+		}
+
+		[DllImport("kernel32.dll")]
+		private static extern Boolean GetExitCodeProcess(uint hProcess, ref uint exitCode);
 	}
 
 	public class SourceFolder
@@ -134,8 +161,6 @@ namespace dCover.Geral
 		public string parameters = "";		
 		public bool   isActive = true;
 		public bool   isService = false;
-
-		public int baseAddress = 0x400000; //By default, but will be dynamic
-        public uint handle;
 	}
+
 }

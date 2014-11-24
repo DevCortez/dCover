@@ -31,17 +31,34 @@ namespace dCover.Geral
 		PROCESS_INFORMATION processInformation = new PROCESS_INFORMATION();
 		private ProjectModule module;
         private Project mainProject;
+		private uint handle;
+		private uint baseAddress = 0x400000; //Should be made dynamic, will be reintroduced with system monitoring
 
 		public bool status { get{ return debuggingThread == null ? true : debuggingThread.IsAlive; } }
+		
+		private unsafe void setInitialBreakpoints()
+		{
+			foreach(CoveragePoint currentPoint in mainProject.coveragePointList.Where(x => module.moduleFile.Contains(x.moduleName) && !x.wasCovered).ToList())
+			{
+				uint currentAddress = (uint)(currentPoint.offset + baseAddress + SECTION_OFFSET);
+				uint bytesRead = 0;
+				ReadProcessMemory(handle, currentAddress, ref currentPoint.originalCode, 1, ref bytesRead);
 
+				byte breakpointByte = 0xCC;
+				uint bytesWritten = 0;
+				WriteProcessMemory(handle, currentAddress, &breakpointByte, 1, ref bytesWritten);
 
-
+				currentPoint.isSet = true;
+			}
+		}
 
 		unsafe void debuggingLoop()
 		{
             uint continueStatus;
             CreateProcess(module.moduleFile, null, 0, 0, false, 2, 0, null, ref startupInfo, out processInformation);
-            module.handle = processInformation.hProcess;
+            handle = processInformation.hProcess;
+			mainProject.runningProcesses.Add(handle);
+			setInitialBreakpoints();
 			
 			while(status)
 			{
@@ -66,19 +83,19 @@ namespace dCover.Geral
 								continueStatus = 0x80010001;
 								break;
 							}
-                            CoveragePoint currentPoint = mainProject.coveragePointList.Where(x => x.offset + module.baseAddress + SECTION_OFFSET == debugEvent.Exception.ExceptionRecord.ExceptionAddress).FirstOrDefault();
 
-                            Console.WriteLine("Event at " + debugEvent.Exception.ExceptionRecord.ExceptionAddress.ToString("X4"));
+                            CoveragePoint currentPoint = mainProject.coveragePointList.Where(x => x.offset + baseAddress + SECTION_OFFSET == debugEvent.Exception.ExceptionRecord.ExceptionAddress && module.moduleFile.Contains(x.moduleName)).FirstOrDefault();
                             
                             if(currentPoint != null)
                             {
                                 Console.WriteLine(currentPoint.lineNumber + " -> " + currentPoint.sourceFile + " @ " + currentPoint.routineName);
-                                currentPoint.wasCovered = true;
 
-                                byte placeHolder = 0x90; //Nop for testing
+                                byte originalValue = currentPoint.originalCode;
                                 uint bytesWritten = 0;
 
-                                WriteProcessMemory(module.handle, debugEvent.Exception.ExceptionRecord.ExceptionAddress, &placeHolder, 1, ref bytesWritten);
+								WriteProcessMemory(handle, debugEvent.Exception.ExceptionRecord.ExceptionAddress, &originalValue, 1, ref bytesWritten);
+								currentPoint.wasCovered = true;
+								currentPoint.isSet = false;
                                 
                                 ThreadContext threadContext = new ThreadContext();
                                 threadContext.ContextFlags = 0x10001;
@@ -327,7 +344,7 @@ namespace dCover.Geral
         private unsafe static extern uint WriteProcessMemory(uint hProcess, uint address, void* buffer, uint size, ref uint bytesWritten);
 
         [DllImport("kernel32.dll")]
-        private unsafe static extern uint ReadProcessMemory(uint hProcess, uint address, void* buffer, uint size, ref uint bytesRead);
+        private unsafe static extern uint ReadProcessMemory(uint hProcess, uint address, ref byte buffer, uint size, ref uint bytesRead);
 
 		[DllImport("kernel32.dll")]
 		private static extern uint OpenProcess(uint dwDesiredAccess, bool bInheritHandle,
