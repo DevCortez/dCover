@@ -37,10 +37,11 @@ namespace dCover.Geral
 
 
 
-		void debuggingLoop()
+		unsafe void debuggingLoop()
 		{
             uint continueStatus;
             CreateProcess(module.moduleFile, null, 0, 0, false, 2, 0, null, ref startupInfo, out processInformation);
+            module.handle = processInformation.hProcess;
 			
 			while(status)
 			{
@@ -73,6 +74,22 @@ namespace dCover.Geral
                             {
                                 Console.WriteLine(currentPoint.lineNumber + " -> " + currentPoint.sourceFile + " @ " + currentPoint.routineName);
                                 currentPoint.wasCovered = true;
+
+                                byte placeHolder = 0x90; //Nop for testing
+                                uint bytesWritten = 0;
+
+                                WriteProcessMemory(module.handle, debugEvent.Exception.ExceptionRecord.ExceptionAddress, &placeHolder, 1, ref bytesWritten);
+                                
+                                ThreadContext threadContext = new ThreadContext();
+                                threadContext.ContextFlags = 0x10001;
+                                uint threadHandle = OpenThread(0x001F03FF, false, debugEvent.dwThreadId); //THREAD_ALL_ACCESS
+
+                                if (!GetThreadContext(threadHandle, ref threadContext))
+                                    Console.WriteLine(GetLastError());
+
+                                threadContext.Eip--;
+                                SetThreadContext(threadHandle, ref threadContext);
+                                CloseHandle(threadHandle);                                                                
                             }
                             
 							break;
@@ -303,9 +320,14 @@ namespace dCover.Geral
 		private static extern uint OpenThread(uint dwDesiredAccess, bool bInheritHandle,
 			uint dwThreadId);
 
-		[DllImport("kernel32.dll")]
-		private static extern uint GetLastError();
+        [DllImport("kernel32.dll")]
+        private static extern uint GetLastError();
 
+        [DllImport("kernel32.dll")]
+        private unsafe static extern uint WriteProcessMemory(uint hProcess, uint address, void* buffer, uint size, ref uint bytesWritten);
+
+        [DllImport("kernel32.dll")]
+        private unsafe static extern uint ReadProcessMemory(uint hProcess, uint address, void* buffer, uint size, ref uint bytesRead);
 
 		[DllImport("kernel32.dll")]
 		private static extern uint OpenProcess(uint dwDesiredAccess, bool bInheritHandle,

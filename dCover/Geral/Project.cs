@@ -136,5 +136,6 @@ namespace dCover.Geral
 		public bool   isService = false;
 
 		public int baseAddress = 0x400000; //By default, but will be dynamic
+        public uint handle;
 	}
 }

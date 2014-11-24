@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Diagnostics;
 
 namespace dCover.Forms
 {
@@ -14,7 +15,8 @@ namespace dCover.Forms
 		[STAThread]
 		static void Main()
 		{
-			Application.EnableVisualStyles();
+            Process.EnterDebugMode();
+            Application.EnableVisualStyles();
 			Application.SetCompatibleTextRenderingDefault(false);
 			Application.Run(new frmPrincipal());
 		}
