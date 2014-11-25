@@ -161,6 +161,8 @@ namespace dCover.Geral
 		public string parameters = "";		
 		public bool   isActive = true;
 		public bool   isService = false;
+
+		public IEnumerable<string> selectedSourceFiles = new List<string>();
 	}
 
 }

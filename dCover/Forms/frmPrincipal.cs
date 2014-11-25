@@ -8,11 +8,16 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using dCover.Geral;
+using Aga.Controls.Tree;
+using Aga.Controls.Tree.NodeControls;
 
 namespace dCover.Forms
 {
 	public partial class frmPrincipal : Form
 	{
+		private TreeViewAdv projectTreeView = new TreeViewAdv();
+		private TreeModel projectTreeModel = new TreeModel();
+		
 		private Project project = new Project();
 		
 		public frmPrincipal()
@@ -30,9 +35,43 @@ namespace dCover.Forms
             project.SaveToFile(@"c:\projeto_bacon.xml");
 		}
 
+		private void updateProjectInformation()
+		{
+			(projectTreeView.Model as TreeModel).Nodes.Clear();
+			
+			foreach(ProjectModule x in project.moduleFiles)
+			{
+				Node currentModuleNode = new Node();
+				currentModuleNode.Text = x.moduleFile;
+
+				foreach(string y in project.coveragePointList.Where(y => x.moduleFile.Contains(y.moduleName)).Select(y => y.sourceFile).Distinct())
+				{
+					Node currentSourceFileNode = new Node();
+					currentSourceFileNode.Text = y;
+					currentModuleNode.Nodes.Add(currentSourceFileNode);
+				}
+
+				projectTreeModel.Nodes.Add(currentModuleNode);
+			}
+		}
+
 		private void frmPrincipal_Load(object sender, EventArgs e)
 		{
-			project.LoadFromFile(@"c:\projeto.xml");
+			tProject.Controls.Add(projectTreeView);
+			projectTreeView.SelectionMode = TreeSelectionMode.Multi;
+			projectTreeView.FullRowSelect = true;
+			projectTreeView.Dock = DockStyle.Fill;
+			projectTreeView.Model = projectTreeModel;
+			
+
+			NodeCheckBox nodeCheckBox = new NodeCheckBox();
+			nodeCheckBox.DataPropertyName = "IsChecked";
+			nodeCheckBox.EditEnabled = true;
+			projectTreeView.NodeControls.Add(nodeCheckBox);
+
+			NodeTextBox nodeText = new NodeTextBox();
+			nodeText.DataPropertyName = "Text";
+			projectTreeView.NodeControls.Add(nodeText);
 		}
 
         private void button2_Click(object sender, EventArgs e)
@@ -48,6 +87,8 @@ namespace dCover.Forms
 		private void openToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			ProjectLoader.LoadNewDelphiProject(project);
+
+			updateProjectInformation();
 		}
 
 		private void saveWorkspaceToolStripMenuItem_Click(object sender, EventArgs e)
@@ -75,11 +116,15 @@ namespace dCover.Forms
 				return;
 
 			project.LoadFromFile(loadDialog.FileName);
+
+			updateProjectInformation();
 		}
 
 		private void clearWorkspaceToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			project = new Project();
+
+			updateProjectInformation();
 		}
 	}
 }

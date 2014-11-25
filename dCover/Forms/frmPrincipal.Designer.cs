@@ -35,10 +35,13 @@
 			this.loadWorkspaceToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.clearWorkspaceToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.tcMainMenu = new System.Windows.Forms.TabControl();
+			this.tProject = new System.Windows.Forms.TabPage();
+			this.splitter1 = new System.Windows.Forms.Splitter();
+			this.pnlProject = new System.Windows.Forms.Panel();
 			this.statusStrip1 = new System.Windows.Forms.StatusStrip();
-			this.tabPage3 = new System.Windows.Forms.TabPage();
 			this.menuStrip1.SuspendLayout();
 			this.tcMainMenu.SuspendLayout();
+			this.tProject.SuspendLayout();
 			this.SuspendLayout();
 			// 
 			// menuStrip1
@@ -92,15 +95,41 @@
 			// 
 			// tcMainMenu
 			// 
-			this.tcMainMenu.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-			this.tcMainMenu.Controls.Add(this.tabPage3);
-			this.tcMainMenu.Location = new System.Drawing.Point(0, 27);
+			this.tcMainMenu.Controls.Add(this.tProject);
+			this.tcMainMenu.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.tcMainMenu.Location = new System.Drawing.Point(0, 24);
 			this.tcMainMenu.Name = "tcMainMenu";
 			this.tcMainMenu.SelectedIndex = 0;
-			this.tcMainMenu.Size = new System.Drawing.Size(558, 360);
+			this.tcMainMenu.Size = new System.Drawing.Size(558, 388);
 			this.tcMainMenu.TabIndex = 1;
+			// 
+			// tProject
+			// 
+			this.tProject.Controls.Add(this.splitter1);
+			this.tProject.Controls.Add(this.pnlProject);
+			this.tProject.Location = new System.Drawing.Point(4, 22);
+			this.tProject.Name = "tProject";
+			this.tProject.Size = new System.Drawing.Size(550, 362);
+			this.tProject.TabIndex = 0;
+			this.tProject.Text = "Project";
+			this.tProject.UseVisualStyleBackColor = true;
+			// 
+			// splitter1
+			// 
+			this.splitter1.Dock = System.Windows.Forms.DockStyle.Right;
+			this.splitter1.Location = new System.Drawing.Point(336, 0);
+			this.splitter1.Name = "splitter1";
+			this.splitter1.Size = new System.Drawing.Size(3, 362);
+			this.splitter1.TabIndex = 1;
+			this.splitter1.TabStop = false;
+			// 
+			// pnlProject
+			// 
+			this.pnlProject.Dock = System.Windows.Forms.DockStyle.Right;
+			this.pnlProject.Location = new System.Drawing.Point(339, 0);
+			this.pnlProject.Name = "pnlProject";
+			this.pnlProject.Size = new System.Drawing.Size(211, 362);
+			this.pnlProject.TabIndex = 0;
 			// 
 			// statusStrip1
 			// 
@@ -109,15 +138,6 @@
 			this.statusStrip1.Size = new System.Drawing.Size(558, 22);
 			this.statusStrip1.TabIndex = 2;
 			this.statusStrip1.Text = "statusStrip1";
-			// 
-			// tabPage3
-			// 
-			this.tabPage3.Location = new System.Drawing.Point(4, 22);
-			this.tabPage3.Name = "tabPage3";
-			this.tabPage3.Size = new System.Drawing.Size(550, 334);
-			this.tabPage3.TabIndex = 0;
-			this.tabPage3.Text = "Project";
-			this.tabPage3.UseVisualStyleBackColor = true;
 			// 
 			// frmPrincipal
 			// 
@@ -136,6 +156,7 @@
 			this.menuStrip1.ResumeLayout(false);
 			this.menuStrip1.PerformLayout();
 			this.tcMainMenu.ResumeLayout(false);
+			this.tProject.ResumeLayout(false);
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
@@ -151,7 +172,9 @@
 		private System.Windows.Forms.ToolStripMenuItem clearWorkspaceToolStripMenuItem;
 		private System.Windows.Forms.TabControl tcMainMenu;
 		private System.Windows.Forms.StatusStrip statusStrip1;
-		private System.Windows.Forms.TabPage tabPage3;
+		private System.Windows.Forms.TabPage tProject;
+		private System.Windows.Forms.Splitter splitter1;
+		private System.Windows.Forms.Panel pnlProject;
 	}
 }
 
