@@ -6,12 +6,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Win32;
 using Microsoft.Runtime;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 
 
 namespace dCover.Geral
 {
-	class ProjectProcess
+	public class ProjectProcess
 	{
         const uint SECTION_OFFSET = 0x1000;
         
@@ -31,7 +32,8 @@ namespace dCover.Geral
 		PROCESS_INFORMATION processInformation = new PROCESS_INFORMATION();
 		private ProjectModule module;
         private Project mainProject;
-		private uint handle;
+		public uint handle;
+		public uint processId;
 		private uint baseAddress = 0x400000; //Should be made dynamic, will be reintroduced with system monitoring
 
 		public bool status { get{ return debuggingThread == null ? true : debuggingThread.IsAlive; } }
@@ -57,7 +59,9 @@ namespace dCover.Geral
             uint continueStatus;
             CreateProcess(module.moduleFile, null, 0, 0, false, 2, 0, null, ref startupInfo, out processInformation);
             handle = processInformation.hProcess;
-			mainProject.runningProcesses.Add(handle);
+			processId = processInformation.dwProcessId;
+			mainProject.runningProcesses.Add(Process.GetProcessById((int)processId));
+
 			setInitialBreakpoints();
 			
 			while(status)
@@ -127,7 +131,7 @@ namespace dCover.Geral
 			debuggingThread = new Thread(new ThreadStart(debuggingLoop));
 			debuggingThread.Start();
 		
-			ResumeThread(processInformation.hThread);
+			ResumeThread(processInformation.hThread);			
 			return true;
 		}
 

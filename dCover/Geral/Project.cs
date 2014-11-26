@@ -15,7 +15,13 @@ namespace dCover.Geral
 		public List<CoveragePoint> coveragePointList = new List<CoveragePoint>();
 		public List<SourceFolder> sourceFolders = new List<SourceFolder>();
 		public List<ProjectModule> moduleFiles = new List<ProjectModule>();
-		public List<uint> runningProcesses = new List<uint>();
+		public List<Process> runningProcesses = new List<Process>();
+		
+
+		public Project()
+		{
+			
+		}
 
 		public void SaveToFile(string fileName)
 		{
@@ -117,26 +123,6 @@ namespace dCover.Geral
 			#endregion
 		}
 
-		private void processMonitor()
-		{
-			while(true) //Ugly but necessary
-			{
-				foreach(uint x in runningProcesses)
-				{
-					uint exitCode = 0;
-					GetExitCodeProcess(x, ref exitCode);
-
-					if(exitCode != 259)
-					{
-						runningProcesses.Remove(x);
-						Console.WriteLine("Process " + x + " exited with " + exitCode);
-					}
-				}
-
-				Thread.Sleep(100); //Prevent overhead from this thread to improve performance
-			}
-		}
-
 		[DllImport("kernel32.dll")]
 		private static extern Boolean GetExitCodeProcess(uint hProcess, ref uint exitCode);
 	}
@@ -162,7 +148,7 @@ namespace dCover.Geral
 		public bool   isActive = true;
 		public bool   isService = false;
 
-		public IEnumerable<string> selectedSourceFiles = new List<string>(); //Must be implemented
+		public List<string> selectedSourceFiles = new List<string>(); //Must be implemented
 	}
 
 }

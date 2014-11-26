@@ -81,5 +81,11 @@ namespace dCover.Forms
 		{
 			project = new Project();
 		}
+
+		private void runSelectedToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			ProjectProcess proc = new ProjectProcess();
+			proc.CreateProcess(project.moduleFiles.First(), project);
+		}
 	}
 }
