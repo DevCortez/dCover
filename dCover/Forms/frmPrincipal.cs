@@ -7,13 +7,25 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.IO;
 using dCover.Geral;
+using System.Diagnostics;
 
 namespace dCover.Forms
 {
 	public partial class frmPrincipal : Form
 	{
 		private Project project = new Project();
+		
+		private void updateInterfaceInformation()
+		{
+			clbProject.Items.Clear();
+
+			foreach(string x in project.moduleFiles.Select(x => x.moduleFile).Distinct())
+			{
+				clbProject.Items.Add(Path.GetFileName(x));
+			}
+		}
 		
 		public frmPrincipal()
 		{
@@ -48,6 +60,7 @@ namespace dCover.Forms
 		private void openToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			ProjectLoader.LoadNewDelphiProject(project);
+			updateInterfaceInformation();
 		}
 
 		private void saveWorkspaceToolStripMenuItem_Click(object sender, EventArgs e)
@@ -75,17 +88,25 @@ namespace dCover.Forms
 				return;
 
 			project.LoadFromFile(loadDialog.FileName);
+			updateInterfaceInformation();
 		}
 
 		private void clearWorkspaceToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			project = new Project();
+			updateInterfaceInformation();
 		}
 
 		private void runSelectedToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			ProjectProcess proc = new ProjectProcess();
-			proc.CreateProcess(project.moduleFiles.First(), project);
+			foreach(var x in clbProject.CheckedItems)
+				new ProjectProcess().CreateProcess(project.moduleFiles.Where(y => y.moduleFile.Contains(x.ToString())).First() , project);
+		}
+
+		private void terminateAllToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			foreach(Process x in project.runningProcesses.Where(x => !x.HasExited))
+				x.Kill();
 		}
 	}
 }

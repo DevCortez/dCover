@@ -42,6 +42,9 @@ namespace dCover.Geral
 		{
 			foreach(CoveragePoint currentPoint in mainProject.coveragePointList.Where(x => module.moduleFile.Contains(x.moduleName) && !x.wasCovered).ToList())
 			{
+				if(currentPoint.wasCovered)
+					continue;
+				
 				uint currentAddress = (uint)(currentPoint.offset + baseAddress + SECTION_OFFSET);
 				uint bytesRead = 0;
 				ReadProcessMemory(handle, currentAddress, ref currentPoint.originalCode, 1, ref bytesRead);

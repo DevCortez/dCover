@@ -41,6 +41,8 @@
 			this.splitter1 = new System.Windows.Forms.Splitter();
 			this.projectToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.runSelectedToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.clbProject = new System.Windows.Forms.CheckedListBox();
+			this.terminateAllToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.menuStrip1.SuspendLayout();
 			this.tcMainMenu.SuspendLayout();
 			this.tabProject.SuspendLayout();
@@ -66,34 +68,34 @@
             this.clearWorkspaceToolStripMenuItem});
 			this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
 			this.fileToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
-			this.fileToolStripMenuItem.Text = "File";
+			this.fileToolStripMenuItem.Text = "&File";
 			// 
 			// openToolStripMenuItem
 			// 
 			this.openToolStripMenuItem.Name = "openToolStripMenuItem";
 			this.openToolStripMenuItem.Size = new System.Drawing.Size(176, 22);
-			this.openToolStripMenuItem.Text = "Load delphi project";
+			this.openToolStripMenuItem.Text = "Load &delphi project";
 			this.openToolStripMenuItem.Click += new System.EventHandler(this.openToolStripMenuItem_Click);
 			// 
 			// saveWorkspaceToolStripMenuItem
 			// 
 			this.saveWorkspaceToolStripMenuItem.Name = "saveWorkspaceToolStripMenuItem";
 			this.saveWorkspaceToolStripMenuItem.Size = new System.Drawing.Size(176, 22);
-			this.saveWorkspaceToolStripMenuItem.Text = "Save workspace";
+			this.saveWorkspaceToolStripMenuItem.Text = "&Save workspace";
 			this.saveWorkspaceToolStripMenuItem.Click += new System.EventHandler(this.saveWorkspaceToolStripMenuItem_Click);
 			// 
 			// loadWorkspaceToolStripMenuItem
 			// 
 			this.loadWorkspaceToolStripMenuItem.Name = "loadWorkspaceToolStripMenuItem";
 			this.loadWorkspaceToolStripMenuItem.Size = new System.Drawing.Size(176, 22);
-			this.loadWorkspaceToolStripMenuItem.Text = "Load workspace";
+			this.loadWorkspaceToolStripMenuItem.Text = "&Load workspace";
 			this.loadWorkspaceToolStripMenuItem.Click += new System.EventHandler(this.loadWorkspaceToolStripMenuItem_Click);
 			// 
 			// clearWorkspaceToolStripMenuItem
 			// 
 			this.clearWorkspaceToolStripMenuItem.Name = "clearWorkspaceToolStripMenuItem";
 			this.clearWorkspaceToolStripMenuItem.Size = new System.Drawing.Size(176, 22);
-			this.clearWorkspaceToolStripMenuItem.Text = "Clear workspace";
+			this.clearWorkspaceToolStripMenuItem.Text = "&Clear workspace";
 			this.clearWorkspaceToolStripMenuItem.Click += new System.EventHandler(this.clearWorkspaceToolStripMenuItem_Click);
 			// 
 			// tcMainMenu
@@ -108,6 +110,7 @@
 			// 
 			// tabProject
 			// 
+			this.tabProject.Controls.Add(this.clbProject);
 			this.tabProject.Controls.Add(this.splitter1);
 			this.tabProject.Controls.Add(this.pnlProjectInformation);
 			this.tabProject.Location = new System.Drawing.Point(4, 22);
@@ -145,17 +148,35 @@
 			// projectToolStripMenuItem
 			// 
 			this.projectToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.runSelectedToolStripMenuItem});
+            this.runSelectedToolStripMenuItem,
+            this.terminateAllToolStripMenuItem});
 			this.projectToolStripMenuItem.Name = "projectToolStripMenuItem";
 			this.projectToolStripMenuItem.Size = new System.Drawing.Size(56, 20);
-			this.projectToolStripMenuItem.Text = "Project";
+			this.projectToolStripMenuItem.Text = "&Project";
 			// 
 			// runSelectedToolStripMenuItem
 			// 
 			this.runSelectedToolStripMenuItem.Name = "runSelectedToolStripMenuItem";
 			this.runSelectedToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
-			this.runSelectedToolStripMenuItem.Text = "Run selected";
+			this.runSelectedToolStripMenuItem.Text = "&Run selected";
 			this.runSelectedToolStripMenuItem.Click += new System.EventHandler(this.runSelectedToolStripMenuItem_Click);
+			// 
+			// clbProject
+			// 
+			this.clbProject.BorderStyle = System.Windows.Forms.BorderStyle.None;
+			this.clbProject.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.clbProject.FormattingEnabled = true;
+			this.clbProject.Location = new System.Drawing.Point(0, 0);
+			this.clbProject.Name = "clbProject";
+			this.clbProject.Size = new System.Drawing.Size(177, 315);
+			this.clbProject.TabIndex = 2;
+			// 
+			// terminateAllToolStripMenuItem
+			// 
+			this.terminateAllToolStripMenuItem.Name = "terminateAllToolStripMenuItem";
+			this.terminateAllToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+			this.terminateAllToolStripMenuItem.Text = "&Terminate all";
+			this.terminateAllToolStripMenuItem.Click += new System.EventHandler(this.terminateAllToolStripMenuItem_Click);
 			// 
 			// frmPrincipal
 			// 
@@ -195,6 +216,8 @@
 		private System.Windows.Forms.Splitter splitter1;
 		private System.Windows.Forms.ToolStripMenuItem projectToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem runSelectedToolStripMenuItem;
+		private System.Windows.Forms.CheckedListBox clbProject;
+		private System.Windows.Forms.ToolStripMenuItem terminateAllToolStripMenuItem;
 	}
 }
 

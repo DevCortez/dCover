@@ -17,7 +17,6 @@ namespace dCover.Geral
 		public List<ProjectModule> moduleFiles = new List<ProjectModule>();
 		public List<Process> runningProcesses = new List<Process>();
 		
-
 		public Project()
 		{
 			
