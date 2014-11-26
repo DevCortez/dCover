@@ -95,7 +95,7 @@ namespace dCover.Geral
                             
                             if(currentPoint != null)
                             {
-                                Console.WriteLine(currentPoint.lineNumber + " -> " + currentPoint.sourceFile + " @ " + currentPoint.routineName);
+                                Console.WriteLine("[" + currentPoint.moduleName + "] " + currentPoint.lineNumber + " -> " + currentPoint.sourceFile + " @ " + currentPoint.routineName);
 
                                 byte originalValue = currentPoint.originalCode;
                                 uint bytesWritten = 0;
