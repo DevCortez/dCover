@@ -127,13 +127,8 @@ namespace dCover.Geral
 
 					project.moduleFiles.Add(projectModule);
 				}
-
 			
             project.sourceFolders.Add(new SourceFolder(moduleFileName, rootProjectPath));
-
-			foreach(CoveragePoint x in coveragePoints.OrderBy(y => y.lineNumber).ToList())
-				Console.WriteLine(x.lineNumber + " " + x.sourceFile);
-
 			return true;
 		}
 	}

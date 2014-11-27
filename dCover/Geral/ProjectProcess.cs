@@ -167,8 +167,12 @@ namespace dCover.Geral
 				switch(debugEvent.dwDebugEventCode)
 				{
 					case LOAD_DLL_DEBUG_EVENT:
-						{
-							byte[] dllNameBuffer;
+                        {
+                            if (debugEvent.LoadDll.lpImageName == 0)
+                                break;
+                            
+                            #region Check modules being loaded
+                            byte[] dllNameBuffer;
 							uint dllNamePointer = 0;
 							uint bytesRead = 0;
 
@@ -218,10 +222,20 @@ namespace dCover.Geral
 								baseAddress = debugEvent.LoadDll.lpBaseOfDll;
 								setInitialBreakpoints();
 							}
-							break;
-						}
 
-					default: //Could be reverted
+                            Console.WriteLine("[" + Path.GetFileName(module.moduleFile) + "] Loaded " + finalNameBuffer);
+							break;
+                            #endregion
+                        }
+
+                    case EXIT_PROCESS_DEBUG_EVENT:
+                        {
+                            Console.WriteLine("Process " + module.moduleFile + " died");
+                            mainProject.runningProcesses.Remove(mainProject.runningProcesses.Where(x => x.Id == processId).First());
+                            break;
+                        }
+
+                    default: //Could be reverted
 						{
 							if(debugEvent.Exception.ExceptionRecord.ExceptionCode != STATUS_BREAKPOINT)
 							{
@@ -231,9 +245,10 @@ namespace dCover.Geral
 
                             CoveragePoint currentPoint = mainProject.coveragePointList.Where(x => x.offset + baseAddress + SECTION_OFFSET == debugEvent.Exception.ExceptionRecord.ExceptionAddress && module.moduleFile.Contains(x.moduleName)).FirstOrDefault();
                             
-                            if(currentPoint != null)
+                            if(currentPoint != null && currentPoint.isSet)
                             {
-                                Console.WriteLine("[" + currentPoint.moduleName + "] " + currentPoint.lineNumber + " -> " + currentPoint.sourceFile + " @ " + currentPoint.routineName);
+                                #region Handle breakpoint
+                                Console.WriteLine("[" + currentPoint.moduleName + "] Executed line " + currentPoint.lineNumber + " -> " + currentPoint.sourceFile + " @ " + currentPoint.routineName);
 
                                 byte originalValue = currentPoint.originalCode;
                                 uint bytesWritten = 0;
@@ -251,7 +266,8 @@ namespace dCover.Geral
 
                                 threadContext.Eip--;
                                 SetThreadContext(threadHandle, ref threadContext);
-                                CloseHandle(threadHandle);                                                                
+                                CloseHandle(threadHandle);
+                                #endregion
                             }
                             
 							break;
