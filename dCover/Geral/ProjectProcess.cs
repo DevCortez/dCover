@@ -59,6 +59,8 @@ namespace dCover.Geral
 				uint bytesWritten = 0;
 				WriteProcessMemory(handle, currentAddress, &breakpointByte, 1, ref bytesWritten);
 
+				Console.WriteLine("Breakpoint set @ " + currentAddress.ToString("X4"));
+
 				currentPoint.isSet = true;
 			}
 
@@ -75,7 +77,7 @@ namespace dCover.Geral
 				string loadLibraryAProc = "LoadLibraryA";
 				uint kernel32Handle;
 
-				uint loadLibraryAddress;// = GetProcAddress(LoadLibraryA(ref kernel32dll), ref loadLibraryAProc);
+				uint loadLibraryAddress;
 
 				fixed (void* k32dll = Encoding.ASCII.GetBytes(kernel32dll))
 				{
@@ -166,7 +168,7 @@ namespace dCover.Geral
 				{
 					case LOAD_DLL_DEBUG_EVENT:
 						{
-							byte[] dllNameBuffer = new byte[0x500];
+							byte[] dllNameBuffer;
 							uint dllNamePointer = 0;
 							uint bytesRead = 0;
 
@@ -179,7 +181,7 @@ namespace dCover.Geral
 								for(dllNameSize = 0; dllNameSize < 0x4ff; dllNameSize++)
 								{
 									byte currentByte = 0;
-									ReadProcessMemory(handle, (uint)(dllNamePointer + dllNameSize), ref currentByte, 1, ref bytesRead);
+									ReadProcessMemory(handle, Convert.ToUInt32(dllNamePointer + dllNameSize), ref currentByte, 1, ref bytesRead);
 
 									if(currentByte == 0)
 										break;
@@ -190,12 +192,14 @@ namespace dCover.Geral
 								for (dllNameSize = 0; dllNameSize < 0x4ff; dllNameSize += 2)
 								{
 									byte currentByte = 0;
-									ReadProcessMemory(handle, (uint)(dllNamePointer + dllNameSize + 1), ref currentByte, 1, ref bytesRead);
+									ReadProcessMemory(handle, Convert.ToUInt32(dllNamePointer + dllNameSize), ref currentByte, 1, ref bytesRead);
 
 									if (currentByte == 0)
 										break;
 								}
 							}
+
+							dllNameBuffer = new byte[dllNameSize];
 							
 							fixed(void* buffer = dllNameBuffer)
 							{								
@@ -209,7 +213,11 @@ namespace dCover.Geral
 							else
 								finalNameBuffer = Encoding.Unicode.GetString(dllNameBuffer);
 
-							Console.WriteLine(finalNameBuffer);
+							if(finalNameBuffer.Contains(Path.GetFileName(module.moduleFile)))
+							{
+								baseAddress = debugEvent.LoadDll.lpBaseOfDll;
+								setInitialBreakpoints();
+							}
 							break;
 						}
 
