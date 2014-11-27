@@ -8,13 +8,15 @@ using Microsoft.Win32;
 using Microsoft.Runtime;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.IO;
 
 
 namespace dCover.Geral
 {
 	public class ProjectProcess
 	{
-        const uint SECTION_OFFSET = 0x1000;
+        #region Constants
+		const uint SECTION_OFFSET = 0x1000;
         
         const int EXCEPTION_DEBUG_EVENT = 1;
 		const int CREATE_THREAD_DEBUG_EVENT = 2;
@@ -26,7 +28,9 @@ namespace dCover.Geral
 		const int OUTPUT_DEBUG_STRING_EVENT = 8;
 		const int RIP_EVENT = 9;
 		const uint STATUS_BREAKPOINT = 0x80000003;
+		#endregion
 		
+		#region Variables
 		private Thread debuggingThread = null;
 		STARTUPINFO startupInfo = new STARTUPINFO();
 		PROCESS_INFORMATION processInformation = new PROCESS_INFORMATION();
@@ -37,6 +41,8 @@ namespace dCover.Geral
 		private uint baseAddress = 0x400000; //Should be made dynamic, will be reintroduced with system monitoring
 
 		public bool status { get{ return debuggingThread == null ? true : debuggingThread.IsAlive; } }
+		private bool breakpointsAreSet = false;
+		#endregion
 		
 		private unsafe void setInitialBreakpoints()
 		{
@@ -55,17 +61,78 @@ namespace dCover.Geral
 
 				currentPoint.isSet = true;
 			}
+
+			breakpointsAreSet = true;
 		}
 
-		unsafe void debuggingLoop()
+		private unsafe bool startProcess()
 		{
-            uint continueStatus;
-            CreateProcess(module.moduleFile, null, 0, 0, false, 2, 0, null, ref startupInfo, out processInformation);
-            handle = processInformation.hProcess;
+			if(module.isHosted)
+			{
+				#region Initialize hosted module
+				string destinationModule = Path.GetDirectoryName(module.host) + "\\" + Path.GetFileName(module.moduleFile);
+				string kernel32dll = "kernel32.dll";
+				string loadLibraryAProc = "LoadLibraryA";
+				uint kernel32Handle;
+
+				uint loadLibraryAddress;// = GetProcAddress(LoadLibraryA(ref kernel32dll), ref loadLibraryAProc);
+
+				fixed (void* k32dll = Encoding.ASCII.GetBytes(kernel32dll))
+				{
+					kernel32Handle = LoadLibraryA(k32dll);
+				}
+
+				fixed (void* loadLibProc = Encoding.ASCII.GetBytes(loadLibraryAProc))
+				{
+					loadLibraryAddress = GetProcAddress(kernel32Handle, loadLibProc);
+				}
+
+				try
+				{
+					File.Copy(module.moduleFile, destinationModule, true);
+				}
+				catch{}
+
+				CreateProcess(module.host, module.parameters, 0, 0, false, 2, 0, null, ref startupInfo, out processInformation);
+
+				uint stringReference = VirtualAllocEx(processInformation.hProcess, 0, 0x1000, 0x1000, 4);
+				uint bytesWritten = 0;
+
+				fixed (void* localBuffer = Encoding.ASCII.GetBytes(destinationModule))
+				{
+					WriteProcessMemory(processInformation.hProcess, stringReference, localBuffer, (uint)destinationModule.Length, ref bytesWritten); 
+				}
+
+				CreateRemoteThread(processInformation.hProcess, 0, 0, loadLibraryAddress, stringReference, 0, 0);
+				#endregion
+			}
+			else if(module.isService)
+			{
+			}
+			else
+			{
+				CreateProcess(module.moduleFile, module.parameters, 0, 0, false, 2, 0, null, ref startupInfo, out processInformation);
+			}
+			
+			if(processInformation.hProcess == 0)
+				return false;
+
+			handle = processInformation.hProcess;
 			processId = processInformation.dwProcessId;
 			mainProject.runningProcesses.Add(Process.GetProcessById((int)processId));
+			
+			return true;
+		}
+		
+		unsafe void debuggingLoop()
+		{
+            uint continueStatus;            
+			
+			if(!startProcess())
+				return;
 
-			setInitialBreakpoints();
+			if(!module.isHosted && !module.isService)
+				setInitialBreakpoints();
 			
 			while(status)
 			{
@@ -75,11 +142,74 @@ namespace dCover.Geral
 					continue;
 
 				continueStatus = 0x00010002;
+
+				if(!breakpointsAreSet)
+				{
+					if (module.isHosted)
+					{
+						try
+						{
+							Process targetProcess = Process.GetProcessById((int)processId);
+							ProcessModule targetModule = (from ProcessModule x in targetProcess.Modules where module.moduleFile.Contains(x.FileName) select x).FirstOrDefault();
+												
+							if (targetModule != null)
+							{
+								baseAddress = (uint)targetModule.BaseAddress;
+								setInitialBreakpoints();
+							}
+						}
+						catch{}
+					}
+				}
 				
 				switch(debugEvent.dwDebugEventCode)
 				{
-					case CREATE_PROCESS_DEBUG_EVENT:
+					case LOAD_DLL_DEBUG_EVENT:
 						{
+							byte[] dllNameBuffer = new byte[0x500];
+							uint dllNamePointer = 0;
+							uint bytesRead = 0;
+
+							ReadProcessMemory(handle, debugEvent.LoadDll.lpImageName, ref dllNamePointer, 4, ref bytesRead);						
+
+							int dllNameSize;
+
+							if (debugEvent.LoadDll.fUnicode == 0)
+							{
+								for(dllNameSize = 0; dllNameSize < 0x4ff; dllNameSize++)
+								{
+									byte currentByte = 0;
+									ReadProcessMemory(handle, (uint)(dllNamePointer + dllNameSize), ref currentByte, 1, ref bytesRead);
+
+									if(currentByte == 0)
+										break;
+								}
+							}
+							else
+							{
+								for (dllNameSize = 0; dllNameSize < 0x4ff; dllNameSize += 2)
+								{
+									byte currentByte = 0;
+									ReadProcessMemory(handle, (uint)(dllNamePointer + dllNameSize + 1), ref currentByte, 1, ref bytesRead);
+
+									if (currentByte == 0)
+										break;
+								}
+							}
+							
+							fixed(void* buffer = dllNameBuffer)
+							{								
+								ReadProcessMemory(handle, dllNamePointer, buffer, (uint)dllNameSize, ref bytesRead);
+							}
+
+							string finalNameBuffer;
+
+							if(debugEvent.LoadDll.fUnicode == 0)							
+								finalNameBuffer = Encoding.ASCII.GetString(dllNameBuffer);
+							else
+								finalNameBuffer = Encoding.Unicode.GetString(dllNameBuffer);
+
+							Console.WriteLine(finalNameBuffer);
 							break;
 						}
 
@@ -344,14 +474,43 @@ namespace dCover.Geral
 		private static extern uint OpenThread(uint dwDesiredAccess, bool bInheritHandle,
 			uint dwThreadId);
 
-        [DllImport("kernel32.dll")]
-        private static extern uint GetLastError();
+		[DllImport("kernel32.dll")]
+		private static extern uint GetLastError();
+
+		[DllImport("kernel32.dll")]
+		private static extern unsafe uint LoadLibraryA(void* pModule);
+
+		[DllImport("kernel32.dll")]
+		private static extern unsafe uint GetProcAddress(uint pHandle, void* pFunction);
+
+		[DllImport("kernel32.dll")]
+		private static extern uint CreateRemoteThread(uint hProcess,
+													  uint lpThreadAttributes,
+													  uint dwStackSize,
+													  uint lpStartAddress,
+													  uint lpParameter,
+													  uint dwCreationFlags,
+													  uint lpThreadId);
+
+
+		[DllImport("kernel32.dll")]
+		private static extern uint VirtualAllocEx(uint hProcess,
+												  uint lpAddress,
+												  uint dwSize,
+												  uint flAllocationType,
+												  uint flProtect);
 
         [DllImport("kernel32.dll")]
         private unsafe static extern uint WriteProcessMemory(uint hProcess, uint address, void* buffer, uint size, ref uint bytesWritten);
 
-        [DllImport("kernel32.dll")]
-        private unsafe static extern uint ReadProcessMemory(uint hProcess, uint address, ref byte buffer, uint size, ref uint bytesRead);
+		[DllImport("kernel32.dll")]
+		private unsafe static extern uint ReadProcessMemory(uint hProcess, uint address, ref byte buffer, uint size, ref uint bytesRead);
+
+		[DllImport("kernel32.dll")]
+		private unsafe static extern uint ReadProcessMemory(uint hProcess, uint address, void* buffer, uint size, ref uint bytesRead);
+
+		[DllImport("kernel32.dll")]
+		private unsafe static extern uint ReadProcessMemory(uint hProcess, uint address, ref uint buffer, uint size, ref uint bytesRead);
 
 		[DllImport("kernel32.dll")]
 		private static extern uint OpenProcess(uint dwDesiredAccess, bool bInheritHandle,

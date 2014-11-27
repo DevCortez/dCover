@@ -151,8 +151,15 @@ namespace dCover.Forms
 
 		private void terminateAllToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			foreach(Process x in project.runningProcesses.Where(x => !x.HasExited))
-				x.Kill();
+			foreach(Process x in project.runningProcesses)
+				try
+				{
+					x.Kill();
+				}
+				catch
+				{
+					Console.WriteLine("Tried to kill an unknown process");
+				}
 		}
 
 		private void clbProject_SelectedValueChanged(object sender, EventArgs e)

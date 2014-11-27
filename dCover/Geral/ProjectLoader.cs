@@ -111,7 +111,7 @@ namespace dCover.Geral
 			if((from ProjectModule x in project.moduleFiles where x.moduleFile.Contains(moduleFileName) select x).FirstOrDefault() != null)
 				return false;
 
-            coveragePoints.Remove(coveragePoints.Where(x => x.sourceFile == mainSourceFileName).OrderBy(x => x.lineNumber).First());
+            coveragePoints.Remove(coveragePoints.Where(x => x.sourceFile == mainSourceFileName).OrderBy(x => x.lineNumber).FirstOrDefault());
             
 			updateModuleName(coveragePoints, moduleFileName);									
 			project.coveragePointList.AddRange(coveragePoints);
