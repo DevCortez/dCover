@@ -17,13 +17,44 @@ namespace dCover.Forms
 	{
 		private Project project = new Project();
 		
-		private void updateInterfaceInformation()
+		private void updateProjectOverview()
 		{
 			clbProject.Items.Clear();
 
 			foreach(string x in project.moduleFiles.Select(x => x.moduleFile).Distinct())
 			{
-				clbProject.Items.Add(Path.GetFileName(x));
+				clbProject.Items.Add(Path.GetFileName(x), project.moduleFiles.Where(y => y.moduleFile == x).First().isActive);
+			}
+		}
+
+		private void updateProjectInformation()
+		{
+			if (clbProject.SelectedItems.Count == 1)
+			{
+				ProjectModule selectedModule = project.moduleFiles.Where(x => x.moduleFile.Contains(clbProject.SelectedItem.ToString())).First();
+				lblModulePath.Text = selectedModule.moduleFile;
+				
+				lblRoutineCount.Text = project.coveragePointList.Where(
+									   x => selectedModule.moduleFile.Contains(x.moduleName)
+									   ).Select(
+									   x => x.routineName
+									   ).Distinct().Count().ToString() + " routines";
+
+				lblUnitCount.Text = project.coveragePointList.Where(
+									   x => selectedModule.moduleFile.Contains(x.moduleName)
+									   ).Select(
+									   x => x.sourceFile
+									   ).Distinct().Count().ToString() + " units in project"; 
+
+				lblTotalPoints.Text  = project.coveragePointList.Where(
+									   x => selectedModule.moduleFile.Contains(x.moduleName)
+									   ).Count().ToString() + " coverage points";
+
+				pnlProjectInformation.Show();
+			}
+			else
+			{
+				pnlProjectInformation.Hide();
 			}
 		}
 		
@@ -60,7 +91,7 @@ namespace dCover.Forms
 		private void openToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			ProjectLoader.LoadNewDelphiProject(project);
-			updateInterfaceInformation();
+			updateProjectOverview();
 		}
 
 		private void saveWorkspaceToolStripMenuItem_Click(object sender, EventArgs e)
@@ -88,13 +119,13 @@ namespace dCover.Forms
 				return;
 
 			project.LoadFromFile(loadDialog.FileName);
-			updateInterfaceInformation();
+			updateProjectOverview();
 		}
 
 		private void clearWorkspaceToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			project = new Project();
-			updateInterfaceInformation();
+			updateProjectOverview();
 		}
 
 		private void runSelectedToolStripMenuItem_Click(object sender, EventArgs e)
@@ -107,6 +138,11 @@ namespace dCover.Forms
 		{
 			foreach(Process x in project.runningProcesses.Where(x => !x.HasExited))
 				x.Kill();
+		}
+
+		private void clbProject_SelectedValueChanged(object sender, EventArgs e)
+		{
+			updateProjectInformation();
 		}
 	}
 }

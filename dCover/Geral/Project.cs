@@ -53,7 +53,8 @@ namespace dCover.Geral
 				moduleNode.SetAttributeValue("active", x.isActive);
 				moduleNode.SetAttributeValue("host", x.host);
 				moduleNode.SetAttributeValue("param", x.parameters);
-				moduleNode.SetAttributeValue("service", x.isService);			
+				moduleNode.SetAttributeValue("service", x.isService);	
+				moduleNode.SetAttributeValue("hosted", x.isHosted);		
 				
 				moduleFilesNode.Add(moduleNode);
 			}
@@ -101,6 +102,7 @@ namespace dCover.Geral
 				projectModule.isActive = Convert.ToBoolean(x.Attribute("active").Value);
 				projectModule.isService = Convert.ToBoolean(x.Attribute("service").Value);
 				projectModule.parameters = x.Attribute("param").Value;
+				projectModule.isHosted = Convert.ToBoolean(x.Attribute("hosted").Value);
 
 				moduleFiles.Add(projectModule);
 			}
@@ -146,6 +148,7 @@ namespace dCover.Geral
 		public string parameters = "";		
 		public bool   isActive = true;
 		public bool   isService = false;
+		public bool   isHosted = false;
 
 		public List<string> selectedSourceFiles = new List<string>(); //Must be implemented
 	}
