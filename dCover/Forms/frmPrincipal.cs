@@ -32,8 +32,8 @@ namespace dCover.Forms
 			if (clbProject.SelectedItems.Count == 1)
 			{
 				ProjectModule selectedModule = project.moduleFiles.Where(x => x.moduleFile.Contains(clbProject.SelectedItem.ToString())).First();
-				lblModulePath.Text = selectedModule.moduleFile;
 				
+				#region Update information labels		
 				lblRoutineCount.Text = project.coveragePointList.Where(
 									   x => selectedModule.moduleFile.Contains(x.moduleName)
 									   ).Select(
@@ -49,6 +49,18 @@ namespace dCover.Forms
 				lblTotalPoints.Text  = project.coveragePointList.Where(
 									   x => selectedModule.moduleFile.Contains(x.moduleName)
 									   ).Count().ToString() + " coverage points";
+				#endregion
+
+				#region Update project variables in the panel
+				txtApplication.Text = selectedModule.moduleFile;
+				
+				txtParams.Text = selectedModule.parameters;
+
+				chkHost.Checked = selectedModule.isHosted;
+				txtHost.Text = selectedModule.host;
+				txtHost.Enabled = selectedModule.isHosted;
+				btnHost.Enabled = selectedModule.isHosted;
+				#endregion
 
 				pnlProjectInformation.Show();
 			}
@@ -110,6 +122,8 @@ namespace dCover.Forms
 
 		private void loadWorkspaceToolStripMenuItem_Click(object sender, EventArgs e)
 		{
+			project = new Project();
+			
 			OpenFileDialog loadDialog = new OpenFileDialog();
 			loadDialog.Title = "Load workspace";
 			loadDialog.Filter = "dCover workspace|*.dcw";
@@ -120,6 +134,7 @@ namespace dCover.Forms
 
 			project.LoadFromFile(loadDialog.FileName);
 			updateProjectOverview();
+			updateProjectInformation();
 		}
 
 		private void clearWorkspaceToolStripMenuItem_Click(object sender, EventArgs e)
@@ -143,6 +158,56 @@ namespace dCover.Forms
 		private void clbProject_SelectedValueChanged(object sender, EventArgs e)
 		{
 			updateProjectInformation();
+		}
+
+		private void chkHost_CheckedChanged(object sender, EventArgs e)
+		{
+			txtHost.Enabled = chkHost.Checked;
+			btnHost.Enabled = chkHost.Checked;
+		}
+
+		private void btnSave_Click(object sender, EventArgs e)
+		{
+			ProjectModule selectedModule = project.moduleFiles.Where(x => x.moduleFile.Contains(clbProject.SelectedItem.ToString())).First();
+			selectedModule.moduleFile =  txtApplication.Text;
+			selectedModule.isHosted = chkHost.Checked;
+			selectedModule.host = txtHost.Text;
+			selectedModule.parameters = txtParams.Text;
+		}
+
+		private void btnCancel_Click(object sender, EventArgs e)
+		{
+			updateProjectInformation();
+		}
+
+		private void btnApplication_Click(object sender, EventArgs e)
+		{
+			OpenFileDialog findApplication = new OpenFileDialog();			
+			ProjectModule selectedModule = project.moduleFiles.Where(x => x.moduleFile.Contains(clbProject.SelectedItem.ToString())).First();
+			
+			findApplication.Title = "Find application...";
+			findApplication.Filter = Path.GetFileName(selectedModule.moduleFile) + "|" + Path.GetFileName(selectedModule.moduleFile);
+			findApplication.CheckFileExists = true;
+			
+			if(findApplication.ShowDialog() != DialogResult.OK)
+				return;
+
+			txtApplication.Text = findApplication.FileName;
+		}
+
+		private void btnHost_Click(object sender, EventArgs e)
+		{
+			OpenFileDialog findHost = new OpenFileDialog();
+			ProjectModule selectedModule = project.moduleFiles.Where(x => x.moduleFile.Contains(clbProject.SelectedItem.ToString())).First();
+
+			findHost.Title = "Find application...";
+			findHost.Filter = "Executable|*.exe";
+			findHost.CheckFileExists = true;
+
+			if (findHost.ShowDialog() != DialogResult.OK)
+				return;
+
+			txtHost.Text = findHost.FileName;
 		}
 	}
 }

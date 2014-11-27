@@ -145,7 +145,7 @@ namespace dCover.Geral
 		public string moduleFile;
 		public string hash = ""; //Remove initialization after complete implementation
 		public string host = "";
-		public string parameters = "";		
+		public string parameters = "";	
 		public bool   isActive = true;
 		public bool   isService = false;
 		public bool   isHosted = false;

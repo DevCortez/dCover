@@ -42,13 +42,20 @@
 			this.clbProject = new System.Windows.Forms.CheckedListBox();
 			this.splitter1 = new System.Windows.Forms.Splitter();
 			this.pnlProjectInformation = new System.Windows.Forms.Panel();
-			this.statusStrip1 = new System.Windows.Forms.StatusStrip();
-			this.txtParams = new System.Windows.Forms.TextBox();
-			this.lblParams = new System.Windows.Forms.Label();
-			this.lblTotalPoints = new System.Windows.Forms.Label();
-			this.lblModulePath = new System.Windows.Forms.Label();
-			this.lblRoutineCount = new System.Windows.Forms.Label();
+			this.btnCancel = new System.Windows.Forms.Button();
+			this.btnSave = new System.Windows.Forms.Button();
+			this.lblApplication = new System.Windows.Forms.Label();
+			this.btnApplication = new System.Windows.Forms.Button();
+			this.txtApplication = new System.Windows.Forms.TextBox();
+			this.btnHost = new System.Windows.Forms.Button();
+			this.txtHost = new System.Windows.Forms.TextBox();
+			this.chkHost = new System.Windows.Forms.CheckBox();
 			this.lblUnitCount = new System.Windows.Forms.Label();
+			this.lblRoutineCount = new System.Windows.Forms.Label();
+			this.lblTotalPoints = new System.Windows.Forms.Label();
+			this.lblParams = new System.Windows.Forms.Label();
+			this.txtParams = new System.Windows.Forms.TextBox();
+			this.statusStrip1 = new System.Windows.Forms.StatusStrip();
 			this.menuStrip1.SuspendLayout();
 			this.tcMainMenu.SuspendLayout();
 			this.tabProject.SuspendLayout();
@@ -171,9 +178,16 @@
 			// 
 			// pnlProjectInformation
 			// 
+			this.pnlProjectInformation.Controls.Add(this.btnCancel);
+			this.pnlProjectInformation.Controls.Add(this.btnSave);
+			this.pnlProjectInformation.Controls.Add(this.lblApplication);
+			this.pnlProjectInformation.Controls.Add(this.btnApplication);
+			this.pnlProjectInformation.Controls.Add(this.txtApplication);
+			this.pnlProjectInformation.Controls.Add(this.btnHost);
+			this.pnlProjectInformation.Controls.Add(this.txtHost);
+			this.pnlProjectInformation.Controls.Add(this.chkHost);
 			this.pnlProjectInformation.Controls.Add(this.lblUnitCount);
 			this.pnlProjectInformation.Controls.Add(this.lblRoutineCount);
-			this.pnlProjectInformation.Controls.Add(this.lblModulePath);
 			this.pnlProjectInformation.Controls.Add(this.lblTotalPoints);
 			this.pnlProjectInformation.Controls.Add(this.lblParams);
 			this.pnlProjectInformation.Controls.Add(this.txtParams);
@@ -184,6 +198,133 @@
 			this.pnlProjectInformation.TabIndex = 0;
 			this.pnlProjectInformation.Visible = false;
 			// 
+			// btnCancel
+			// 
+			this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+			this.btnCancel.Location = new System.Drawing.Point(179, 273);
+			this.btnCancel.Name = "btnCancel";
+			this.btnCancel.Size = new System.Drawing.Size(52, 21);
+			this.btnCancel.TabIndex = 13;
+			this.btnCancel.Text = "Cancel";
+			this.btnCancel.UseVisualStyleBackColor = true;
+			this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
+			// 
+			// btnSave
+			// 
+			this.btnSave.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+			this.btnSave.Location = new System.Drawing.Point(121, 273);
+			this.btnSave.Name = "btnSave";
+			this.btnSave.Size = new System.Drawing.Size(52, 21);
+			this.btnSave.TabIndex = 12;
+			this.btnSave.Text = "Save";
+			this.btnSave.UseVisualStyleBackColor = true;
+			this.btnSave.Click += new System.EventHandler(this.btnSave_Click);
+			// 
+			// lblApplication
+			// 
+			this.lblApplication.AutoSize = true;
+			this.lblApplication.Location = new System.Drawing.Point(14, 69);
+			this.lblApplication.Name = "lblApplication";
+			this.lblApplication.Size = new System.Drawing.Size(59, 13);
+			this.lblApplication.TabIndex = 11;
+			this.lblApplication.Text = "Application";
+			// 
+			// btnApplication
+			// 
+			this.btnApplication.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+			this.btnApplication.Location = new System.Drawing.Point(194, 85);
+			this.btnApplication.Name = "btnApplication";
+			this.btnApplication.Size = new System.Drawing.Size(37, 21);
+			this.btnApplication.TabIndex = 10;
+			this.btnApplication.Text = "...";
+			this.btnApplication.UseVisualStyleBackColor = true;
+			this.btnApplication.Click += new System.EventHandler(this.btnApplication_Click);
+			// 
+			// txtApplication
+			// 
+			this.txtApplication.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+			this.txtApplication.Location = new System.Drawing.Point(17, 85);
+			this.txtApplication.Name = "txtApplication";
+			this.txtApplication.Size = new System.Drawing.Size(171, 20);
+			this.txtApplication.TabIndex = 9;
+			// 
+			// btnHost
+			// 
+			this.btnHost.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+			this.btnHost.Location = new System.Drawing.Point(194, 176);
+			this.btnHost.Name = "btnHost";
+			this.btnHost.Size = new System.Drawing.Size(37, 21);
+			this.btnHost.TabIndex = 8;
+			this.btnHost.Text = "...";
+			this.btnHost.UseVisualStyleBackColor = true;
+			this.btnHost.Click += new System.EventHandler(this.btnHost_Click);
+			// 
+			// txtHost
+			// 
+			this.txtHost.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+			this.txtHost.Location = new System.Drawing.Point(17, 177);
+			this.txtHost.Name = "txtHost";
+			this.txtHost.Size = new System.Drawing.Size(171, 20);
+			this.txtHost.TabIndex = 7;
+			// 
+			// chkHost
+			// 
+			this.chkHost.AutoSize = true;
+			this.chkHost.Location = new System.Drawing.Point(17, 154);
+			this.chkHost.Name = "chkHost";
+			this.chkHost.Size = new System.Drawing.Size(102, 17);
+			this.chkHost.TabIndex = 6;
+			this.chkHost.Text = "Host application";
+			this.chkHost.UseVisualStyleBackColor = true;
+			this.chkHost.CheckedChanged += new System.EventHandler(this.chkHost_CheckedChanged);
+			// 
+			// lblUnitCount
+			// 
+			this.lblUnitCount.AutoSize = true;
+			this.lblUnitCount.Location = new System.Drawing.Point(14, 10);
+			this.lblUnitCount.Name = "lblUnitCount";
+			this.lblUnitCount.Size = new System.Drawing.Size(84, 13);
+			this.lblUnitCount.TabIndex = 5;
+			this.lblUnitCount.Text = "5 units in project";
+			// 
+			// lblRoutineCount
+			// 
+			this.lblRoutineCount.AutoSize = true;
+			this.lblRoutineCount.Location = new System.Drawing.Point(14, 24);
+			this.lblRoutineCount.Name = "lblRoutineCount";
+			this.lblRoutineCount.Size = new System.Drawing.Size(59, 13);
+			this.lblRoutineCount.TabIndex = 4;
+			this.lblRoutineCount.Text = "56 routines";
+			// 
+			// lblTotalPoints
+			// 
+			this.lblTotalPoints.AutoSize = true;
+			this.lblTotalPoints.Location = new System.Drawing.Point(14, 39);
+			this.lblTotalPoints.Name = "lblTotalPoints";
+			this.lblTotalPoints.Size = new System.Drawing.Size(104, 13);
+			this.lblTotalPoints.TabIndex = 2;
+			this.lblTotalPoints.Text = "210 coverage points";
+			// 
+			// lblParams
+			// 
+			this.lblParams.AutoSize = true;
+			this.lblParams.Location = new System.Drawing.Point(14, 110);
+			this.lblParams.Name = "lblParams";
+			this.lblParams.Size = new System.Drawing.Size(110, 13);
+			this.lblParams.TabIndex = 1;
+			this.lblParams.Text = "Command line params";
+			// 
+			// txtParams
+			// 
+			this.txtParams.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+			this.txtParams.Location = new System.Drawing.Point(17, 126);
+			this.txtParams.Name = "txtParams";
+			this.txtParams.Size = new System.Drawing.Size(214, 20);
+			this.txtParams.TabIndex = 0;
+			// 
 			// statusStrip1
 			// 
 			this.statusStrip1.Location = new System.Drawing.Point(0, 343);
@@ -191,61 +332,6 @@
 			this.statusStrip1.Size = new System.Drawing.Size(427, 22);
 			this.statusStrip1.TabIndex = 2;
 			this.statusStrip1.Text = "statusStrip1";
-			// 
-			// txtParams
-			// 
-			this.txtParams.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-			this.txtParams.Location = new System.Drawing.Point(17, 119);
-			this.txtParams.Name = "txtParams";
-			this.txtParams.Size = new System.Drawing.Size(214, 20);
-			this.txtParams.TabIndex = 0;
-			// 
-			// lblParams
-			// 
-			this.lblParams.AutoSize = true;
-			this.lblParams.Location = new System.Drawing.Point(14, 103);
-			this.lblParams.Name = "lblParams";
-			this.lblParams.Size = new System.Drawing.Size(110, 13);
-			this.lblParams.TabIndex = 1;
-			this.lblParams.Text = "Command line params";
-			// 
-			// lblTotalPoints
-			// 
-			this.lblTotalPoints.AutoSize = true;
-			this.lblTotalPoints.Location = new System.Drawing.Point(14, 67);
-			this.lblTotalPoints.Name = "lblTotalPoints";
-			this.lblTotalPoints.Size = new System.Drawing.Size(104, 13);
-			this.lblTotalPoints.TabIndex = 2;
-			this.lblTotalPoints.Text = "210 coverage points";
-			// 
-			// lblModulePath
-			// 
-			this.lblModulePath.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-			this.lblModulePath.Location = new System.Drawing.Point(14, 14);
-			this.lblModulePath.Name = "lblModulePath";
-			this.lblModulePath.Size = new System.Drawing.Size(217, 13);
-			this.lblModulePath.TabIndex = 3;
-			this.lblModulePath.Text = "c:\\bacon";
-			// 
-			// lblRoutineCount
-			// 
-			this.lblRoutineCount.AutoSize = true;
-			this.lblRoutineCount.Location = new System.Drawing.Point(14, 52);
-			this.lblRoutineCount.Name = "lblRoutineCount";
-			this.lblRoutineCount.Size = new System.Drawing.Size(59, 13);
-			this.lblRoutineCount.TabIndex = 4;
-			this.lblRoutineCount.Text = "56 routines";
-			// 
-			// lblUnitCount
-			// 
-			this.lblUnitCount.AutoSize = true;
-			this.lblUnitCount.Location = new System.Drawing.Point(14, 38);
-			this.lblUnitCount.Name = "lblUnitCount";
-			this.lblUnitCount.Size = new System.Drawing.Size(84, 13);
-			this.lblUnitCount.TabIndex = 5;
-			this.lblUnitCount.Text = "5 units in project";
 			// 
 			// frmPrincipal
 			// 
@@ -294,7 +380,14 @@
 		private System.Windows.Forms.Label lblTotalPoints;
 		private System.Windows.Forms.Label lblUnitCount;
 		private System.Windows.Forms.Label lblRoutineCount;
-		private System.Windows.Forms.Label lblModulePath;
+		private System.Windows.Forms.CheckBox chkHost;
+		private System.Windows.Forms.TextBox txtHost;
+		private System.Windows.Forms.Button btnHost;
+		private System.Windows.Forms.Button btnApplication;
+		private System.Windows.Forms.TextBox txtApplication;
+		private System.Windows.Forms.Label lblApplication;
+		private System.Windows.Forms.Button btnCancel;
+		private System.Windows.Forms.Button btnSave;
 	}
 }
 
