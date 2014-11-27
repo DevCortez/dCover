@@ -10,6 +10,8 @@ using System.Windows.Forms;
 using System.IO;
 using dCover.Geral;
 using System.Diagnostics;
+using System.Text.RegularExpressions;
+using System.Runtime.InteropServices;
 
 namespace dCover.Forms
 {
@@ -72,28 +74,18 @@ namespace dCover.Forms
 		
 		public frmPrincipal()
 		{
-			InitializeComponent();
-		}
-
-		private void button1_Click(object sender, EventArgs e)
-		{
-			ProjectLoader.LoadNewDelphiProject(project);
-			
-			ProjectProcess proc = new ProjectProcess();
-			proc.CreateProcess(project.moduleFiles.First(), project);
-
-            project.SaveToFile(@"c:\projeto_bacon.xml");
+			InitializeComponent();            
 		}
 
 		private void frmPrincipal_Load(object sender, EventArgs e)
 		{
-			project.LoadFromFile(@"c:\projeto.xml");
+            string commandLine = Encoding.ASCII.GetString(GetCommandLineA());
+            
+            foreach (Match param in Regex.Matches(commandLine, @"\s+[\-\/\\](.)\:?((?(?=\"")(\""[^""]*)|([^\s]*)))"))
+            {
+                //Console.WriteLine(param.Value);
+            }
 		}
-
-        private void button2_Click(object sender, EventArgs e)
-        {
-            project.SaveToFile(@"c:\projeto_bacon.xml");
-        }
 
         private void frmPrincipal_FormClosing(object sender, FormClosingEventArgs e)
         {
@@ -216,5 +208,8 @@ namespace dCover.Forms
 
 			txtHost.Text = findHost.FileName;
 		}
+
+        [DllImport("kernel32.dll")]
+        private static extern byte[] GetCommandLineA();
 	}
 }
