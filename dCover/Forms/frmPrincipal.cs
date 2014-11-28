@@ -10,6 +10,7 @@ using System.Windows.Forms;
 using System.IO;
 using dCover.Geral;
 using System.Diagnostics;
+using System.Threading;
 using System.Text.RegularExpressions;
 using System.Runtime.InteropServices;
 
@@ -18,6 +19,52 @@ namespace dCover.Forms
 	public partial class frmPrincipal : Form
 	{
 		private Project project = new Project();
+
+		private Thread processMonitor;
+
+		private void processMonitorLoop()
+		{
+			while(true)
+			{
+				if(processMonitorToolStripMenuItem.Checked)
+				{
+					List<string> modulesList = (from x in project.moduleFiles select Path.GetFileName(x.moduleFile).ToLower()).ToList();	
+					List<int> pidList = project.runningProcesses.Select(x => x.Id).ToList();				
+					List<Process> processList = Process.GetProcesses().ToList();
+
+					foreach(Process currentProcess in processList)
+					{
+						try
+						{							
+							//If already debugging this guy
+							if(pidList.Contains(currentProcess.Id))
+								continue;
+							
+							if(modulesList.Contains(currentProcess.MainModule.ModuleName.ToLower()))
+							{
+								//Main module itself should be covered
+								ProjectModule projectModule = project.moduleFiles.Where(x => x.moduleFile.Contains(currentProcess.MainModule.ModuleName)).First();
+								new ProjectProcess().AttachToProcess(currentProcess, projectModule, project);
+							}
+
+							foreach(ProcessModule module in currentProcess.Modules)
+							{
+								if(modulesList.Contains(module.ModuleName))
+								{
+									//Attach to process and debug this module
+								}
+							}
+						}
+						catch
+						{
+							continue; //Expect exceptions due to access
+						}
+					}
+				}
+				
+				Thread.Sleep(1);
+			}
+		}
 		
 		private void updateProjectOverview()
 		{
@@ -74,7 +121,9 @@ namespace dCover.Forms
 		
 		public frmPrincipal()
 		{
-			InitializeComponent();            
+			InitializeComponent();
+			processMonitor = new Thread(new ThreadStart(processMonitorLoop));  
+			processMonitor.Start();      
 		}
 
 		private unsafe void frmPrincipal_Load(object sender, EventArgs e)
@@ -113,7 +162,6 @@ namespace dCover.Forms
 							break;
 						}
 				}
-				//Console.WriteLine(param.Value);
             }
 		}
 

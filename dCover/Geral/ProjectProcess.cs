@@ -292,6 +292,28 @@ namespace dCover.Geral
 			return true;
 		}
 
+		public bool AttachToProcess(Process target, ProjectModule targetModule, Project project)
+		{
+			mainProject = project;
+			
+			if(!DebugActiveProcess((uint)target.Id))
+			{
+				Console.WriteLine("Cannot attach to process");
+				return false;
+			}
+
+			module = targetModule;
+			baseAddress = (uint)target.MainModule.BaseAddress;
+			
+			debuggingThread = new Thread(new ThreadStart(debuggingLoop));
+			debuggingThread.Start();
+
+			setInitialBreakpoints();
+			
+			project.runningProcesses.Add(target);			
+			return true;
+		}
+
 		[Flags]
 		public enum HookRegister
 		{
@@ -494,6 +516,10 @@ namespace dCover.Geral
 
 		#region Imports
 
+
+		[DllImport("kernel32.dll")]
+		private static extern bool DebugActiveProcess(uint processId);
+
 		[DllImport("kernel32.dll")]
 		private static extern uint OpenThread(uint dwDesiredAccess, bool bInheritHandle,
 			uint dwThreadId);
@@ -568,10 +594,6 @@ namespace dCover.Geral
 
 		[DllImport("kernel32.dll")]
 		private static extern uint ResumeThread(uint hThread);
-
-
-		[DllImport("kernel32.dll")]
-		private static extern bool DebugActiveProcess(uint dwProcessId);
 
 
 		[DllImport("kernel32.dll")]
