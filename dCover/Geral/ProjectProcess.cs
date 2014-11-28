@@ -97,7 +97,7 @@ namespace dCover.Geral
 
 				CreateProcess(module.host, module.parameters, 0, 0, false, 2, 0, null, ref startupInfo, out processInformation);
 
-				uint stringReference = VirtualAllocEx(processInformation.hProcess, 0, 0x1000, 0x1000, 4);
+                uint stringReference = vAllocExNuma(processInformation.hProcess, 0, 0x1000, 0x1000, 4, 0);
 				uint bytesWritten = 0;
 
 				fixed (void* localBuffer = Encoding.ASCII.GetBytes(destinationModule))
@@ -543,12 +543,13 @@ namespace dCover.Geral
 													  uint lpThreadId);
 
 
-		[DllImport("kernel32.dll")]
-		private static extern uint VirtualAllocEx(uint hProcess,
+        [DllImport("kernel32.dll", EntryPoint = "VirtualAllocExNuma")]
+		private static extern uint vAllocExNuma(uint hProcess,
 												  uint lpAddress,
 												  uint dwSize,
 												  uint flAllocationType,
-												  uint flProtect);
+												  uint flProtect,
+                                                  uint numa);
 
         [DllImport("kernel32.dll")]
         private unsafe static extern uint WriteProcessMemory(uint hProcess, uint address, void* buffer, uint size, ref uint bytesWritten);
