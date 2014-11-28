@@ -77,13 +77,43 @@ namespace dCover.Forms
 			InitializeComponent();            
 		}
 
-		private void frmPrincipal_Load(object sender, EventArgs e)
+		private unsafe void frmPrincipal_Load(object sender, EventArgs e)
 		{
-            string commandLine = Encoding.ASCII.GetString(GetCommandLineA());
-            
-            foreach (Match param in Regex.Matches(commandLine, @"\s+[\-\/\\](.)\:?((?(?=\"")(\""[^""]*)|([^\s]*)))"))
+			foreach (Match param in Regex.Matches(Environment.CommandLine, @"\s+[\-\/\\](.)\:?((?(?=\"")(\""[^""]*)|([^\s]*)))"))
             {
-                //Console.WriteLine(param.Value);
+                switch(param.Groups[1].Value)
+				{
+					case "w":
+						{
+							try
+							{
+								string projectPath = param.Groups[2].Value.Remove(0, 1);
+								project.LoadFromFile(projectPath);
+								updateProjectOverview();
+							}
+							catch
+							{
+								Console.WriteLine("Cannot load project " + param.Groups[2].Value);
+							}
+							break;
+						}
+
+					case "s":
+						{
+							break;
+						}
+
+					case "m":
+						{
+							break;
+						}
+
+					case "c":
+						{
+							break;
+						}
+				}
+				//Console.WriteLine(param.Value);
             }
 		}
 
@@ -208,8 +238,5 @@ namespace dCover.Forms
 
 			txtHost.Text = findHost.FileName;
 		}
-
-        [DllImport("kernel32.dll")]
-        private static extern byte[] GetCommandLineA();
 	}
 }
