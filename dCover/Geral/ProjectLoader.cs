@@ -93,14 +93,22 @@ namespace dCover.Geral
 				if(currentSourceFile == null)
 					currentSourceFile = recursiveFileSearch(currentFile, rootProjectPath + @"..\", 5);
 
-				if(currentSourceFile == null)
-					if(silent)
+                if (currentSourceFile == null)
+                {
+                    Console.WriteLine("File not found " + currentFile);
+
+                    coveragePoints = coveragePoints.Where(x => x.sourceFile != currentFile).ToList();
+                    continue;
+                }
+
+					/*if(silent)
 						return false;
 					else
 					{
 						MessageBox.Show(currentFile + " not found in " + rootProjectPath);
 						return false;
-					}
+                       
+					}*/
 
 				coveragePoints = SourceParser.FilterCoveragePoints(coveragePoints, currentSourceFile).ToList();
 			}

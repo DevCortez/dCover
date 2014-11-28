@@ -59,8 +59,6 @@ namespace dCover.Geral
 				uint bytesWritten = 0;
 				WriteProcessMemory(handle, currentAddress, &breakpointByte, 1, ref bytesWritten);
 
-				Console.WriteLine("Breakpoint set @ " + currentAddress.ToString("X4"));
-
 				currentPoint.isSet = true;
 			}
 
@@ -248,7 +246,7 @@ namespace dCover.Geral
                             if(currentPoint != null && currentPoint.isSet)
                             {
                                 #region Handle breakpoint
-                                Console.WriteLine("[" + currentPoint.moduleName + "] Executed line " + currentPoint.lineNumber + " -> " + currentPoint.sourceFile + " @ " + currentPoint.routineName);
+                                //Console.WriteLine("[" + currentPoint.moduleName + "] Executed line " + currentPoint.lineNumber + " -> " + currentPoint.sourceFile + " @ " + currentPoint.routineName);
 
                                 byte originalValue = currentPoint.originalCode;
                                 uint bytesWritten = 0;
