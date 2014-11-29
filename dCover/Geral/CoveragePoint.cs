@@ -8,14 +8,15 @@ namespace dCover.Geral
 {
 	public class CoveragePoint
 	{
-		public int lineNumber;
+        public int lineNumber;
 		public int offset;
 		public string sourceFile;
 		public string routineName;
 		public string moduleName;
-		public bool wasCovered = false;	
+		public bool wasCovered = false;
 
-		public byte originalCode;
+        public bool originalCodeWasRead = false;
+        public byte originalCode = 0;
 		public bool isSet = false;
 	}
 }

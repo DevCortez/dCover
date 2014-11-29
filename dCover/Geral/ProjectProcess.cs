@@ -50,16 +50,26 @@ namespace dCover.Geral
 			{
 				if(currentPoint.wasCovered)
 					continue;
-				
-				uint currentAddress = (uint)(currentPoint.offset + baseAddress + SECTION_OFFSET);
-				uint bytesRead = 0;
-				ReadProcessMemory(handle, currentAddress, ref currentPoint.originalCode, 1, ref bytesRead);
+
+                uint currentAddress = (uint)(currentPoint.offset + baseAddress + SECTION_OFFSET);
+
+                if (!currentPoint.originalCodeWasRead)
+                {                    
+                    uint bytesRead = 0;
+                    ReadProcessMemory(handle, currentAddress, ref currentPoint.originalCode, 1, ref bytesRead);
+
+                    if (bytesRead == 0)
+                        Console.WriteLine(GetLastError());
+
+                    currentPoint.originalCodeWasRead = true;
+                }
 
 				byte breakpointByte = 0xCC;
 				uint bytesWritten = 0;
 				WriteProcessMemory(handle, currentAddress, &breakpointByte, 1, ref bytesWritten);
 
-				currentPoint.isSet = true;
+				if(bytesWritten == 1)
+                    currentPoint.isSet = true;
 			}
 
 			breakpointsAreSet = true;
@@ -230,6 +240,7 @@ namespace dCover.Geral
                         {
                             Console.WriteLine("Process " + module.moduleFile + " died");
                             mainProject.runningProcesses.Remove(mainProject.runningProcesses.Where(x => x.Id == processId).First());
+                            return;
                             break;
                         }
 
@@ -314,12 +325,13 @@ namespace dCover.Geral
 
 			module = targetModule;
 			baseAddress = (uint)target.MainModule.BaseAddress;
+            handle = OpenProcess(0x001F0FFF, false, (uint)target.Id);
+            
+            setInitialBreakpoints();
 			
 			debuggingThread = new Thread(new ThreadStart(debuggingLoop));
 			debuggingThread.Start();
 
-			setInitialBreakpoints();
-            
             foreach(ProcessThread x in target.Threads)
             {
                 if(x.ThreadState != (originalStates.Where(y => y.Id == x.Id).First()).ThreadState)

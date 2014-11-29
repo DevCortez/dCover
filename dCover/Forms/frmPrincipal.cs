@@ -40,7 +40,7 @@ namespace dCover.Forms
 							if(pidList.Contains(currentProcess.Id))
 								continue;
 							
-							if(modulesList.Contains(currentProcess.MainModule.ModuleName.ToLower()))
+							if(modulesList.Contains(currentProcess.MainModule.ModuleName.ToLower()) && !currentProcess.HasExited)
 							{
 								//Main module itself should be covered
 								ProjectModule projectModule = project.moduleFiles.Where(x => x.moduleFile.Contains(currentProcess.MainModule.ModuleName)).First();
