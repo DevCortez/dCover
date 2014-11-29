@@ -57,8 +57,11 @@
 			this.lblParams = new System.Windows.Forms.Label();
 			this.txtParams = new System.Windows.Forms.TextBox();
 			this.tabRoutines = new System.Windows.Forms.TabPage();
-			this.tvProjectRoutines = new Aga.Controls.Tree.TreeViewAdv();
-			this.treeViewAdv1 = new Aga.Controls.Tree.TreeViewAdv();
+			this.tvaRoutines = new Aga.Controls.Tree.TreeViewAdv();
+			this.isActive = new Aga.Controls.Tree.NodeControls.NodeCheckBox();
+			this.nodeName = new Aga.Controls.Tree.NodeControls.NodeTextBox();
+			this.txtSourceSnippet = new System.Windows.Forms.TextBox();
+			this.splitter2 = new System.Windows.Forms.Splitter();
 			this.menuStrip1.SuspendLayout();
 			this.tcMainMenu.SuspendLayout();
 			this.tabProject.SuspendLayout();
@@ -341,8 +344,9 @@
 			// 
 			// tabRoutines
 			// 
-			this.tabRoutines.Controls.Add(this.treeViewAdv1);
-			this.tabRoutines.Controls.Add(this.tvProjectRoutines);
+			this.tabRoutines.Controls.Add(this.splitter2);
+			this.tabRoutines.Controls.Add(this.txtSourceSnippet);
+			this.tabRoutines.Controls.Add(this.tvaRoutines);
 			this.tabRoutines.Location = new System.Drawing.Point(4, 22);
 			this.tabRoutines.Name = "tabRoutines";
 			this.tabRoutines.Size = new System.Drawing.Size(479, 315);
@@ -350,39 +354,62 @@
 			this.tabRoutines.Text = "Routines";
 			this.tabRoutines.UseVisualStyleBackColor = true;
 			// 
-			// tvProjectRoutines
+			// tvaRoutines
 			// 
-			this.tvProjectRoutines.BackColor = System.Drawing.SystemColors.Window;
-			this.tvProjectRoutines.DefaultToolTipProvider = null;
-			this.tvProjectRoutines.Dock = System.Windows.Forms.DockStyle.Left;
-			this.tvProjectRoutines.DragDropMarkColor = System.Drawing.Color.Black;
-			this.tvProjectRoutines.LineColor = System.Drawing.SystemColors.ControlDark;
-			this.tvProjectRoutines.Location = new System.Drawing.Point(0, 0);
-			this.tvProjectRoutines.Model = null;
-			this.tvProjectRoutines.Name = "tvProjectRoutines";
-			this.tvProjectRoutines.SelectedNode = null;
-			this.tvProjectRoutines.Size = new System.Drawing.Size(0, 315);
-			this.tvProjectRoutines.TabIndex = 0;
+			this.tvaRoutines.BackColor = System.Drawing.SystemColors.Window;
+			this.tvaRoutines.BackColor2 = System.Drawing.SystemColors.Window;
+			this.tvaRoutines.BackgroundPaintMode = Aga.Controls.Tree.BackgroundPaintMode.Default;
+			this.tvaRoutines.DefaultToolTipProvider = null;
+			this.tvaRoutines.DisplayDraggingNodes = true;
+			this.tvaRoutines.Dock = System.Windows.Forms.DockStyle.Left;
+			this.tvaRoutines.DragDropMarkColor = System.Drawing.Color.Black;
+			this.tvaRoutines.GridLineStyle = ((Aga.Controls.Tree.GridLineStyle)((Aga.Controls.Tree.GridLineStyle.Horizontal | Aga.Controls.Tree.GridLineStyle.Vertical)));
+			this.tvaRoutines.HighlightColorActive = System.Drawing.SystemColors.Highlight;
+			this.tvaRoutines.HighlightColorInactive = System.Drawing.SystemColors.InactiveBorder;
+			this.tvaRoutines.LineColor = System.Drawing.SystemColors.ControlDark;
+			this.tvaRoutines.Location = new System.Drawing.Point(0, 0);
+			this.tvaRoutines.Model = null;
+			this.tvaRoutines.Name = "tvaRoutines";
+			this.tvaRoutines.NodeControls.Add(this.isActive);
+			this.tvaRoutines.NodeControls.Add(this.nodeName);
+			this.tvaRoutines.OnVisibleOverride = null;
+			this.tvaRoutines.SelectedNode = null;
+			this.tvaRoutines.SelectionMode = Aga.Controls.Tree.TreeSelectionMode.Multi;
+			this.tvaRoutines.Size = new System.Drawing.Size(214, 315);
+			this.tvaRoutines.TabIndex = 1;
+			this.tvaRoutines.Text = "treeViewAdv1";
 			// 
-			// treeViewAdv1
+			// isActive
 			// 
-			this.treeViewAdv1.BackColor = System.Drawing.SystemColors.Window;
-			this.treeViewAdv1.BackColor2 = System.Drawing.SystemColors.Window;
-			this.treeViewAdv1.BackgroundPaintMode = Aga.Controls.Tree.BackgroundPaintMode.Default;
-			this.treeViewAdv1.DefaultToolTipProvider = null;
-			this.treeViewAdv1.Dock = System.Windows.Forms.DockStyle.Left;
-			this.treeViewAdv1.DragDropMarkColor = System.Drawing.Color.Black;
-			this.treeViewAdv1.HighlightColorActive = System.Drawing.SystemColors.Highlight;
-			this.treeViewAdv1.HighlightColorInactive = System.Drawing.SystemColors.InactiveBorder;
-			this.treeViewAdv1.LineColor = System.Drawing.SystemColors.ControlDark;
-			this.treeViewAdv1.Location = new System.Drawing.Point(0, 0);
-			this.treeViewAdv1.Model = null;
-			this.treeViewAdv1.Name = "treeViewAdv1";
-			this.treeViewAdv1.OnVisibleOverride = null;
-			this.treeViewAdv1.SelectedNode = null;
-			this.treeViewAdv1.Size = new System.Drawing.Size(214, 315);
-			this.treeViewAdv1.TabIndex = 1;
-			this.treeViewAdv1.Text = "treeViewAdv1";
+			this.isActive.DataPropertyName = "CheckState";
+			this.isActive.EditEnabled = true;
+			this.isActive.LeftMargin = 0;
+			this.isActive.ParentColumn = null;
+			// 
+			// nodeName
+			// 
+			this.nodeName.DataPropertyName = "Text";
+			this.nodeName.IncrementalSearchEnabled = true;
+			this.nodeName.LeftMargin = 3;
+			this.nodeName.ParentColumn = null;
+			// 
+			// txtSourceSnippet
+			// 
+			this.txtSourceSnippet.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.txtSourceSnippet.Enabled = false;
+			this.txtSourceSnippet.Location = new System.Drawing.Point(214, 0);
+			this.txtSourceSnippet.Multiline = true;
+			this.txtSourceSnippet.Name = "txtSourceSnippet";
+			this.txtSourceSnippet.Size = new System.Drawing.Size(265, 315);
+			this.txtSourceSnippet.TabIndex = 2;
+			// 
+			// splitter2
+			// 
+			this.splitter2.Location = new System.Drawing.Point(214, 0);
+			this.splitter2.Name = "splitter2";
+			this.splitter2.Size = new System.Drawing.Size(3, 315);
+			this.splitter2.TabIndex = 3;
+			this.splitter2.TabStop = false;
 			// 
 			// frmPrincipal
 			// 
@@ -404,6 +431,7 @@
 			this.pnlProjectInformation.ResumeLayout(false);
 			this.pnlProjectInformation.PerformLayout();
 			this.tabRoutines.ResumeLayout(false);
+			this.tabRoutines.PerformLayout();
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
@@ -440,8 +468,11 @@
 		private System.Windows.Forms.Button btnSave;
 		private System.Windows.Forms.ToolStripMenuItem processMonitorToolStripMenuItem;
 		private System.Windows.Forms.TabPage tabRoutines;
-		private Aga.Controls.Tree.TreeViewAdv tvProjectRoutines;
-		private Aga.Controls.Tree.TreeViewAdv treeViewAdv1;
+		private Aga.Controls.Tree.TreeViewAdv tvaRoutines;
+		private Aga.Controls.Tree.NodeControls.NodeTextBox nodeName;
+		private Aga.Controls.Tree.NodeControls.NodeCheckBox isActive;
+		private System.Windows.Forms.Splitter splitter2;
+		private System.Windows.Forms.TextBox txtSourceSnippet;
 	}
 }
 

@@ -70,10 +70,27 @@ namespace dCover.Forms
 		private void updateProjectOverview()
 		{
 			clbProject.Items.Clear();
+			(tvaRoutines.Model as TreeModel).Nodes.Clear();
 
 			foreach(string x in project.moduleFiles.Select(x => x.moduleFile).Distinct())
 			{
-				clbProject.Items.Add(Path.GetFileName(x), project.moduleFiles.Where(y => y.moduleFile == x).First().isActive);
+				string moduleName = Path.GetFileName(x);
+				clbProject.Items.Add(moduleName, project.moduleFiles.Where(y => y.moduleFile == x).First().isActive);
+			}
+
+			foreach(string sourceFile in project.coveragePointList.Select(x => x.sourceFile).Distinct())
+			{
+				string sourceFileName = Path.GetFileName(sourceFile);
+				UnitNode unitNode = new UnitNode();
+				unitNode.Text = sourceFileName;
+				(tvaRoutines.Model as TreeModel).Nodes.Add(unitNode);
+
+				foreach(string routine in project.coveragePointList.Where(x => x.sourceFile.Contains(sourceFileName)).Select(x => x.routineName).Distinct())
+				{
+					RoutineNode routineNode = new RoutineNode();
+					routineNode.Text = routine;
+					unitNode.Nodes.Add(routineNode);
+				}
 			}
 		}
 
@@ -124,11 +141,9 @@ namespace dCover.Forms
 		{
 			InitializeComponent();
 			processMonitor = new Thread(new ThreadStart(processMonitorLoop));  
-			processMonitor.Start();    
+			processMonitor.Start(); 
 			
-			#region Project routine treeview
-			
-			#endregion  
+			tvaRoutines.Model = new TreeModel();   
 		}
 
 		private unsafe void frmPrincipal_Load(object sender, EventArgs e)
@@ -293,5 +308,17 @@ namespace dCover.Forms
 
 			txtHost.Text = findHost.FileName;
 		}
+		
+		private class ModuleNode : Node
+		{
+		}
+		
+		private class UnitNode : Node
+		{			
+		}
+
+		private class RoutineNode : Node
+		{
+		}	
 	}
 }
