@@ -13,13 +13,14 @@ using System.Diagnostics;
 using System.Threading;
 using System.Text.RegularExpressions;
 using System.Runtime.InteropServices;
+using Aga.Controls.Tree;
+using Aga.Controls.Tree.NodeControls;
 
 namespace dCover.Forms
 {
 	public partial class frmPrincipal : Form
 	{
 		private Project project = new Project();
-
 		private Thread processMonitor;
 
 		private void processMonitorLoop()
@@ -49,7 +50,7 @@ namespace dCover.Forms
 
 							foreach(ProcessModule module in currentProcess.Modules)
 							{
-								if(modulesList.Contains(module.ModuleName))
+								if(modulesList.Contains(module.ModuleName.ToLower()))
 								{
 									//Attach to process and debug this module
 								}
@@ -123,14 +124,19 @@ namespace dCover.Forms
 		{
 			InitializeComponent();
 			processMonitor = new Thread(new ThreadStart(processMonitorLoop));  
-			processMonitor.Start();      
+			processMonitor.Start();    
+			
+			#region Project routine treeview
+			
+			#endregion  
 		}
 
 		private unsafe void frmPrincipal_Load(object sender, EventArgs e)
 		{
 			foreach (Match param in Regex.Matches(Environment.CommandLine, @"\s+[\-\/\\](.)\:?((?(?=\"")(\""[^""]*)|([^\s]*)))"))
             {
-                switch(param.Groups[1].Value)
+                #region Command line
+				switch(param.Groups[1].Value)
 				{
 					case "w":
 						{
@@ -162,6 +168,7 @@ namespace dCover.Forms
 							break;
 						}
 				}
+				#endregion
             }
 		}
 
