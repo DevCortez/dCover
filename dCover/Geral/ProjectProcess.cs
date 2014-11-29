@@ -246,7 +246,7 @@ namespace dCover.Geral
                             if(currentPoint != null && currentPoint.isSet)
                             {
                                 #region Handle breakpoint
-                                //Console.WriteLine("[" + currentPoint.moduleName + "] Executed line " + currentPoint.lineNumber + " -> " + currentPoint.sourceFile + " @ " + currentPoint.routineName);
+                                Console.WriteLine("[" + currentPoint.moduleName + "] Executed line " + currentPoint.lineNumber + " -> " + currentPoint.sourceFile + " @ " + currentPoint.routineName);
 
                                 byte originalValue = currentPoint.originalCode;
                                 uint bytesWritten = 0;
@@ -300,6 +300,18 @@ namespace dCover.Geral
 				return false;
 			}
 
+            List<ProcessThread> originalStates = (from ProcessThread x in target.Threads select x).ToList();
+
+            foreach(ProcessThread x in target.Threads)
+            {
+                if(x.ThreadState == System.Diagnostics.ThreadState.Running)
+                {
+                    uint threadHandle = OpenThread(0x001F03FF, false, (uint)x.Id);
+                    SuspendThread(threadHandle);
+                    CloseHandle(threadHandle);
+                }                
+            }
+
 			module = targetModule;
 			baseAddress = (uint)target.MainModule.BaseAddress;
 			
@@ -307,6 +319,16 @@ namespace dCover.Geral
 			debuggingThread.Start();
 
 			setInitialBreakpoints();
+            
+            foreach(ProcessThread x in target.Threads)
+            {
+                if(x.ThreadState != (originalStates.Where(y => y.Id == x.Id).First()).ThreadState)
+                {
+                    uint threadHandle = OpenThread(0x001F03FF, false, (uint)x.Id);
+                    ResumeThread(threadHandle);
+                    CloseHandle(threadHandle);
+                }
+            }
 			
 			project.runningProcesses.Add(target);			
 			return true;
