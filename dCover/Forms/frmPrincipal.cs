@@ -344,8 +344,12 @@ namespace dCover.Forms
                 {
                     RichTextBox contentHolder = new RichTextBox();
                     contentHolder.WordWrap = false;
-
-                    contentHolder.Text = File.ReadAllText((x.Tag as UnitNode).sourceFile) + "\n------------------------------------------------------------------";
+                   
+                    foreach (string z in File.ReadAllLines((x.Tag as UnitNode).sourceFile))
+                    {
+                        contentHolder.AppendText((contentHolder.Lines.Count() + 1).ToString("00") + (char)9 + z + "\n");
+                    }
+                    
                     contentHolder.SelectAll();
                     contentHolder.SelectionFont = new Font("Verdana", 10);
 
@@ -372,7 +376,6 @@ namespace dCover.Forms
                     {
                         contentHolder.AppendText((contentHolder.Lines.Count() + 1).ToString("00") + (char)9 + z + "\n");
                     }
-                    //contentHolder.Text = File.ReadAllText((x.Tag as RoutineNode).sourceFile);
 
                     contentHolder.SelectAll();
                     contentHolder.SelectionFont = new Font("Verdana", 10);
