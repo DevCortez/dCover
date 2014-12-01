@@ -72,13 +72,16 @@ namespace dCover.Forms
 			clbProject.Items.Clear();
 			(tvaRoutines.Model as TreeModel).Nodes.Clear();
 
-			foreach(string x in project.moduleFiles.Select(x => x.moduleFile).Distinct())
+			foreach(ProjectModule x in project.moduleFiles)
 			{
-				string moduleName = Path.GetFileName(x);
-				clbProject.Items.Add(moduleName, project.moduleFiles.Where(y => y.moduleFile == x).First().isActive);
+				string moduleName = Path.GetFileName(x.moduleFile);
+				clbProject.Items.Add(moduleName, x.isActive);
 
                 ModuleNode moduleNode = new ModuleNode();
                 moduleNode.Text = moduleName;
+                moduleNode.module = x;
+                moduleNode.CheckState = x.isActive ? CheckState.Checked : CheckState.Unchecked;                
+                
                 (tvaRoutines.Model as TreeModel).Nodes.Add(moduleNode);
 
                 foreach(string sourceFile in project.coveragePointList.Select(y => y.sourceFile).Distinct())
@@ -89,6 +92,8 @@ namespace dCover.Forms
 				    unitNode.Text = sourceFileName;
                     unitNode.Tag = unitNode;
                     unitNode.sourceFile = sourceFilePath;
+                    unitNode.CheckState = x.selectedSourceFiles.Contains(sourceFileName) ? CheckState.Checked : CheckState.Unchecked;
+                    unitNode.module = x;
 				    moduleNode.Nodes.Add(unitNode);
 
 				    foreach(string routine in project.coveragePointList.Where(y => y.sourceFile.Contains(sourceFileName)).Select(y => y.routineName).Distinct())
@@ -97,7 +102,9 @@ namespace dCover.Forms
 					    routineNode.Text = routine;
                         routineNode.Tag = routineNode;
                         routineNode.sourceFile = sourceFilePath;
-					    unitNode.Nodes.Add(routineNode);
+                        routineNode.CheckState = x.selectedRoutines.Contains(routine) ? CheckState.Checked : CheckState.Unchecked;
+                        routineNode.module = x;
+                        unitNode.Nodes.Add(routineNode);                        
 				    }
 			    }
 			}
@@ -319,29 +326,53 @@ namespace dCover.Forms
 
 			txtHost.Text = findHost.FileName;
 		}
-		
-		private class ModuleNode : Node
+
+        private class BaseNode : Node
+        {
+            public ProjectModule module;
+        }
+
+        private class ModuleNode : BaseNode
 		{
-		}
-		
-		private class UnitNode : Node
-		{
-            public string sourceFile;
+            //public ProjectModule module;
 		}
 
-		private class RoutineNode : Node
+        private class UnitNode : BaseNode
 		{
             public string sourceFile;
+            //public ProjectModule module;
 		}
 
+        private class RoutineNode : BaseNode
+		{
+            public string sourceFile;            
+		}
+
+        private void validateSelectedPoints()
+        {
+            foreach (var x in tvaRoutines.AllNodes)
+            {
+                if ((x.Tag as BaseNode).module.selectedSourceFiles.Contains((x.Tag as BaseNode).Text) && !((x.Tag as BaseNode).CheckState == CheckState.Checked))
+                    (x.Tag as BaseNode).module.selectedSourceFiles = (x.Tag as BaseNode).module.selectedSourceFiles.Where(y => y != (x.Tag as BaseNode).Text).ToList();
+                else if (!(x.Tag as BaseNode).module.selectedSourceFiles.Contains((x.Tag as BaseNode).Text) && ((x.Tag as BaseNode).CheckState == CheckState.Checked))
+                    (x.Tag as BaseNode).module.selectedSourceFiles.Add((x.Tag as BaseNode).Text);
+
+                if ((x.Tag as BaseNode).module.selectedRoutines.Contains((x.Tag as BaseNode).Text) && !((x.Tag as BaseNode).CheckState == CheckState.Checked))
+                    (x.Tag as BaseNode).module.selectedRoutines = (x.Tag as BaseNode).module.selectedRoutines.Where(y => y != (x.Tag as BaseNode).Text).ToList();
+                else if (!(x.Tag as BaseNode).module.selectedRoutines.Contains((x.Tag as BaseNode).Text) && ((x.Tag as BaseNode).CheckState == CheckState.Checked))
+                    (x.Tag as BaseNode).module.selectedRoutines.Add((x.Tag as BaseNode).Text);
+            }
+        }
+        
         private void tvaRoutines_SelectionChanged(object sender, EventArgs e)
         {
-            txtCodeSnippet.Clear();
+            txtCodeSnippet.Clear();            
             
+            #region Update selected coverage information
             foreach (var x in tvaRoutines.SelectedNodes)
-            {
+            {                
                 if (x.Tag is UnitNode)
-                {
+                {                                       
                     RichTextBox contentHolder = new RichTextBox();
                     contentHolder.WordWrap = false;
                    
@@ -407,7 +438,22 @@ namespace dCover.Forms
 
                     contentHolder.Dispose();
                 }
+                else if(x.Tag is ModuleNode)
+                {
+
+                }
             }
+            #endregion
+        }
+
+        private void tvaRoutines_Click(object sender, EventArgs e)
+        {
+            validateSelectedPoints();
+        }
+
+        private void tvaRoutines_KeyDown(object sender, KeyEventArgs e)
+        {
+            validateSelectedPoints();
         }	
 	}
 }

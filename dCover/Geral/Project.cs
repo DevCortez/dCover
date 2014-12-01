@@ -150,7 +150,8 @@ namespace dCover.Geral
 		public bool   isService = false;
 		public bool   isHosted = false;
 
-		public List<string> selectedSourceFiles = new List<string>(); //Must be implemented
+        public List<string> selectedSourceFiles = new List<string>();
+        public List<string> selectedRoutines = new List<string>();
 	}
 
 }

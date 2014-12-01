@@ -48,7 +48,7 @@ namespace dCover.Geral
 		{
 			foreach(CoveragePoint currentPoint in mainProject.coveragePointList.Where(x => module.moduleFile.Contains(x.moduleName) && !x.wasCovered).ToList())
 			{
-				if(currentPoint.wasCovered)
+				if(currentPoint.wasCovered || !module.selectedRoutines.Contains(currentPoint.routineName) || !module.selectedSourceFiles.Contains(currentPoint.sourceFile))
 					continue;
 
                 uint currentAddress = (uint)(currentPoint.offset + baseAddress + SECTION_OFFSET);

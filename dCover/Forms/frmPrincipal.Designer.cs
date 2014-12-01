@@ -57,11 +57,11 @@
             this.lblParams = new System.Windows.Forms.Label();
             this.txtParams = new System.Windows.Forms.TextBox();
             this.tabRoutines = new System.Windows.Forms.TabPage();
+            this.txtCodeSnippet = new System.Windows.Forms.RichTextBox();
             this.splitter2 = new System.Windows.Forms.Splitter();
             this.tvaRoutines = new Aga.Controls.Tree.TreeViewAdv();
             this.isActive = new Aga.Controls.Tree.NodeControls.NodeCheckBox();
             this.nodeName = new Aga.Controls.Tree.NodeControls.NodeTextBox();
-            this.txtCodeSnippet = new System.Windows.Forms.RichTextBox();
             this.menuStrip1.SuspendLayout();
             this.tcMainMenu.SuspendLayout();
             this.tabProject.SuspendLayout();
@@ -354,6 +354,19 @@
             this.tabRoutines.Text = "Routines";
             this.tabRoutines.UseVisualStyleBackColor = true;
             // 
+            // txtCodeSnippet
+            // 
+            this.txtCodeSnippet.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.txtCodeSnippet.DetectUrls = false;
+            this.txtCodeSnippet.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.txtCodeSnippet.Location = new System.Drawing.Point(217, 0);
+            this.txtCodeSnippet.Name = "txtCodeSnippet";
+            this.txtCodeSnippet.ReadOnly = true;
+            this.txtCodeSnippet.Size = new System.Drawing.Size(262, 315);
+            this.txtCodeSnippet.TabIndex = 4;
+            this.txtCodeSnippet.Text = "";
+            this.txtCodeSnippet.WordWrap = false;
+            // 
             // splitter2
             // 
             this.splitter2.Location = new System.Drawing.Point(214, 0);
@@ -388,6 +401,8 @@
             this.tvaRoutines.TabIndex = 1;
             this.tvaRoutines.Text = "treeViewAdv1";
             this.tvaRoutines.SelectionChanged += new System.EventHandler(this.tvaRoutines_SelectionChanged);
+            this.tvaRoutines.Click += new System.EventHandler(this.tvaRoutines_Click);
+            this.tvaRoutines.KeyDown += new System.Windows.Forms.KeyEventHandler(this.tvaRoutines_KeyDown);
             // 
             // isActive
             // 
@@ -402,19 +417,6 @@
             this.nodeName.IncrementalSearchEnabled = true;
             this.nodeName.LeftMargin = 3;
             this.nodeName.ParentColumn = null;
-            // 
-            // txtCodeSnippet
-            // 
-            this.txtCodeSnippet.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.txtCodeSnippet.DetectUrls = false;
-            this.txtCodeSnippet.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.txtCodeSnippet.Location = new System.Drawing.Point(217, 0);
-            this.txtCodeSnippet.Name = "txtCodeSnippet";
-            this.txtCodeSnippet.ReadOnly = true;
-            this.txtCodeSnippet.Size = new System.Drawing.Size(262, 315);
-            this.txtCodeSnippet.TabIndex = 4;
-            this.txtCodeSnippet.Text = "";
-            this.txtCodeSnippet.WordWrap = false;
             // 
             // frmPrincipal
             // 

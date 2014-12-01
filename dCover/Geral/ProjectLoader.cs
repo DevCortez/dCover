@@ -105,6 +105,9 @@ namespace dCover.Geral
 					foreach(var x in coveragePoints.Select(x => x.sourceFile).Distinct())
 						projectModule.selectedSourceFiles.Add(x);
 
+                    foreach (var x in coveragePoints.Select(x => x.routineName).Distinct())
+                        projectModule.selectedRoutines.Add(x);
+
 					project.moduleFiles.Add(projectModule);
 				}
 			
