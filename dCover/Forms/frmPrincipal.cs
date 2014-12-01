@@ -334,13 +334,11 @@ namespace dCover.Forms
 
         private class ModuleNode : BaseNode
 		{
-            //public ProjectModule module;
 		}
 
         private class UnitNode : BaseNode
 		{
             public string sourceFile;
-            //public ProjectModule module;
 		}
 
         private class RoutineNode : BaseNode
