@@ -76,22 +76,33 @@ namespace dCover.Forms
 			{
 				string moduleName = Path.GetFileName(x);
 				clbProject.Items.Add(moduleName, project.moduleFiles.Where(y => y.moduleFile == x).First().isActive);
+
+                ModuleNode moduleNode = new ModuleNode();
+                moduleNode.Text = moduleName;
+                (tvaRoutines.Model as TreeModel).Nodes.Add(moduleNode);
+
+                foreach(string sourceFile in project.coveragePointList.Select(y => y.sourceFile).Distinct())
+			    {
+				    string sourceFileName = Path.GetFileName(sourceFile);
+                    string sourceFilePath = FileHelper.recursiveFileSearch(sourceFileName, project.sourceFolders.Where(y => y.moduleName == moduleName).Select(y => y.path).First(), 3);
+				    UnitNode unitNode = new UnitNode();
+				    unitNode.Text = sourceFileName;
+                    unitNode.Tag = unitNode;
+                    unitNode.sourceFile = sourceFilePath;
+				    moduleNode.Nodes.Add(unitNode);
+
+				    foreach(string routine in project.coveragePointList.Where(y => y.sourceFile.Contains(sourceFileName)).Select(y => y.routineName).Distinct())
+				    {
+					    RoutineNode routineNode = new RoutineNode();
+					    routineNode.Text = routine;
+                        routineNode.Tag = routineNode;
+                        routineNode.sourceFile = sourceFilePath;
+					    unitNode.Nodes.Add(routineNode);
+				    }
+			    }
 			}
 
-			foreach(string sourceFile in project.coveragePointList.Select(x => x.sourceFile).Distinct())
-			{
-				string sourceFileName = Path.GetFileName(sourceFile);
-				UnitNode unitNode = new UnitNode();
-				unitNode.Text = sourceFileName;
-				(tvaRoutines.Model as TreeModel).Nodes.Add(unitNode);
-
-				foreach(string routine in project.coveragePointList.Where(x => x.sourceFile.Contains(sourceFileName)).Select(x => x.routineName).Distinct())
-				{
-					RoutineNode routineNode = new RoutineNode();
-					routineNode.Text = routine;
-					unitNode.Nodes.Add(routineNode);
-				}
-			}
+			
 		}
 
 		private void updateProjectInformation()
@@ -314,11 +325,50 @@ namespace dCover.Forms
 		}
 		
 		private class UnitNode : Node
-		{			
+		{
+            public string sourceFile;
 		}
 
 		private class RoutineNode : Node
 		{
-		}	
+            public string sourceFile;
+		}
+
+        private void tvaRoutines_SelectionChanged(object sender, EventArgs e)
+        {
+            txtCodeSnippet.Clear();
+            
+            foreach (var x in tvaRoutines.SelectedNodes)
+            {
+                if (x.Tag is UnitNode)
+                {
+                    int initialLineCount = txtCodeSnippet.Lines.Count();
+                    txtCodeSnippet.Text = File.ReadAllText((x.Tag as UnitNode).sourceFile);
+                    //txtCodeSnippet.Select(txtCodeSnippet.Text.IndexOf(txtCodeSnippet.Lines[1 + initialLineCount]), txtCodeSnippet.Lines[1 + initialLineCount].Length);
+                    Font holder = new Font("Verdana", 10);
+                    txtCodeSnippet.SelectAll();
+                    txtCodeSnippet.SelectionFont = holder;
+
+                    foreach(CoveragePoint y in project.coveragePointList)
+                    {
+                        Console.WriteLine(y.sourceFile);
+                    }
+                    
+                    foreach(CoveragePoint y in project.coveragePointList.Where(y => (x.Tag as UnitNode).sourceFile.ToLower().Contains(y.sourceFile.ToLower())))
+                    {
+                        txtCodeSnippet.Select(txtCodeSnippet.GetFirstCharIndexFromLine(y.lineNumber + initialLineCount - 1), txtCodeSnippet.Lines[y.lineNumber + initialLineCount - 1].Length);
+                        
+                        if(y.wasCovered)
+                            txtCodeSnippet.SelectionColor = Color.Green;
+                        else
+                            txtCodeSnippet.SelectionColor = Color.Red;
+                    }
+                }
+                else if(x.Tag is RoutineNode)
+                {
+
+                }
+            }
+        }	
 	}
 }

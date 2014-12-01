@@ -231,7 +231,7 @@ namespace dCover.Geral
 								setInitialBreakpoints();
 							}
 
-                            Console.WriteLine("[" + Path.GetFileName(module.moduleFile) + "] Loaded " + finalNameBuffer);
+                            //Console.WriteLine("[" + Path.GetFileName(module.moduleFile) + "] Loaded " + finalNameBuffer);
 							break;
                             #endregion
                         }

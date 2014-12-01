@@ -27,25 +27,6 @@ namespace dCover.Geral
 
 			return null;
 		}
-		
-		private static string recursiveFileSearch(string fileName, string filePath, int maxDepth = 2)
-		{
-			string foundFile = Directory.GetFiles(filePath, fileName).FirstOrDefault();
-
-			if(foundFile != null)
-				return foundFile;
-
-			if(maxDepth>0)
-				foreach(string currentDirectory in Directory.GetDirectories(filePath))
-				{
-					foundFile = recursiveFileSearch(fileName, currentDirectory, maxDepth-1);
-
-					if (foundFile != null)
-						return foundFile;
-				}
-			
-			return null;
-		}
 
 		private static void updateModuleName(IEnumerable<CoveragePoint> points, string moduleName)
 		{
@@ -70,7 +51,7 @@ namespace dCover.Geral
 
 			#region Load source and clean up coverage points
 			string mainSourceFileName = coveragePoints.Where(x => Regex.IsMatch(x.sourceFile, @"\.dp[rk]")).First().sourceFile;
-			string mainSourceFile = recursiveFileSearch(mainSourceFileName, rootProjectPath);
+            string mainSourceFile = FileHelper.recursiveFileSearch(mainSourceFileName, rootProjectPath);
 
 			if(mainSourceFile == null)
 			{
@@ -88,10 +69,10 @@ namespace dCover.Geral
 			
 			foreach(string currentFile in coveragePoints.Select(x => x.sourceFile).Distinct())
 			{
-				string currentSourceFile = recursiveFileSearch(currentFile, rootProjectPath, 5);
+                string currentSourceFile = FileHelper.recursiveFileSearch(currentFile, rootProjectPath, 5);
 
 				if(currentSourceFile == null)
-					currentSourceFile = recursiveFileSearch(currentFile, rootProjectPath + @"..\", 5);
+                    currentSourceFile = FileHelper.recursiveFileSearch(currentFile, rootProjectPath + @"..\", 5);
 
                 if (currentSourceFile == null)
                 {
@@ -100,15 +81,6 @@ namespace dCover.Geral
                     coveragePoints = coveragePoints.Where(x => x.sourceFile != currentFile).ToList();
                     continue;
                 }
-
-					/*if(silent)
-						return false;
-					else
-					{
-						MessageBox.Show(currentFile + " not found in " + rootProjectPath);
-						return false;
-                       
-					}*/
 
 				coveragePoints = SourceParser.FilterCoveragePoints(coveragePoints, currentSourceFile).ToList();
 			}
@@ -123,7 +95,7 @@ namespace dCover.Geral
             
 			updateModuleName(coveragePoints, moduleFileName);									
 			project.coveragePointList.AddRange(coveragePoints);
-			string moduleFile = recursiveFileSearch(moduleFileName, rootProjectPath);
+            string moduleFile = FileHelper.recursiveFileSearch(moduleFileName, rootProjectPath);
 
 			if(moduleFile != null)
 				{
