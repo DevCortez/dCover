@@ -399,6 +399,8 @@ namespace dCover.Forms
                     contentHolder.Select(contentHolder.GetFirstCharIndexFromLine(relevantLines.First()), contentHolder.GetFirstCharIndexFromLine(relevantLines.Last() + 1) - contentHolder.GetFirstCharIndexFromLine(relevantLines.First()));
 
                     txtCodeSnippet.AppendText("{" + (x.Tag as RoutineNode).Text + "}" + System.Environment.NewLine);
+                    txtCodeSnippet.Select(txtCodeSnippet.GetFirstCharIndexFromLine(txtCodeSnippet.Lines.Count() - 2), txtCodeSnippet.GetFirstCharIndexFromLine(txtCodeSnippet.Lines.Count() - 1));
+                    txtCodeSnippet.SelectionColor = Color.BlueViolet;
                     txtCodeSnippet.Select(txtCodeSnippet.Text.Length, 0);
                     txtCodeSnippet.SelectedRtf = contentHolder.SelectedRtf;
                     txtCodeSnippet.AppendText(System.Environment.NewLine);
