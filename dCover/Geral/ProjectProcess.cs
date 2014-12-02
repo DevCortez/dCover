@@ -77,7 +77,7 @@ namespace dCover.Geral
 
 		private unsafe bool startProcess()
 		{
-            if (module.startDirectory.Length == 0)
+            if (!Directory.Exists(module.startDirectory))
                 module.startDirectory = Environment.CurrentDirectory;
             
             if(module.isHosted)
