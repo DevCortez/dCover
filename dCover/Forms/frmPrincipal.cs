@@ -45,7 +45,9 @@ namespace dCover.Forms
 							{
 								//Main module itself should be covered
 								ProjectModule projectModule = project.moduleFiles.Where(x => x.moduleFile.Contains(currentProcess.MainModule.ModuleName)).First();
-								new ProjectProcess().AttachToProcess(currentProcess, projectModule, project);
+                                
+                                if(projectModule.isActive)
+								    new ProjectProcess().AttachToProcess(currentProcess, projectModule, project);
 							}
 
 							foreach(ProcessModule module in currentProcess.Modules)

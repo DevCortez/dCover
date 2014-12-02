@@ -55,7 +55,21 @@ namespace dCover.Geral
 				moduleNode.SetAttributeValue("param", x.parameters);
 				moduleNode.SetAttributeValue("service", x.isService);
                 moduleNode.SetAttributeValue("hosted", x.isHosted);
-                moduleNode.SetAttributeValue("directory", x.startDirectory);	
+                moduleNode.SetAttributeValue("directory", x.startDirectory);
+
+                foreach (string y in x.selectedSourceFiles)
+                {
+                    XElement selectedSource = new XElement("activeSource");
+                    selectedSource.SetAttributeValue("name", y);
+                    moduleNode.Add(selectedSource);
+                }
+
+                foreach (string y in x.selectedRoutines)
+                {
+                    XElement selectedRoutine = new XElement("activeRoutine");
+                    selectedRoutine.SetAttributeValue("name", y);
+                    moduleNode.Add(selectedRoutine);
+                }
 				
 				moduleFilesNode.Add(moduleNode);
 			}
@@ -104,7 +118,17 @@ namespace dCover.Geral
 				projectModule.isService = Convert.ToBoolean(x.Attribute("service").Value);
 				projectModule.parameters = x.Attribute("param").Value;
 				projectModule.isHosted = Convert.ToBoolean(x.Attribute("hosted").Value);
-                projectModule.startDirectory = x.Attribute("directory").Value;                
+                projectModule.startDirectory = x.Attribute("directory").Value;
+
+                foreach (XElement y in x.Descendants("activeSource"))
+                {
+                    projectModule.selectedSourceFiles.Add(y.Attribute("name").Value);
+                }
+
+                foreach (XElement y in x.Descendants("activeRoutine"))
+                {
+                    projectModule.selectedRoutines.Add(y.Attribute("name").Value);
+                }
 
 				moduleFiles.Add(projectModule);
 			}

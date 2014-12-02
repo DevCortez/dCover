@@ -77,7 +77,10 @@ namespace dCover.Geral
 
 		private unsafe bool startProcess()
 		{
-			if(module.isHosted)
+            if (module.startDirectory.Length == 0)
+                module.startDirectory = Environment.CurrentDirectory;
+            
+            if(module.isHosted)
 			{
 				#region Initialize hosted module
 				string destinationModule = Path.GetDirectoryName(module.host) + "\\" + Path.GetFileName(module.moduleFile);
