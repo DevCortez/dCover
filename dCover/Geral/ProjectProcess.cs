@@ -48,7 +48,7 @@ namespace dCover.Geral
 		{
 			foreach(CoveragePoint currentPoint in mainProject.coveragePointList.Where(x => module.moduleFile.Contains(x.moduleName) && !x.wasCovered).ToList())
 			{
-				if(currentPoint.wasCovered)
+				if(currentPoint.wasCovered || !module.selectedRoutines.Contains(currentPoint.routineName) || !module.selectedSourceFiles.Contains(currentPoint.sourceFile))
 					continue;
 
                 uint currentAddress = (uint)(currentPoint.offset + baseAddress + SECTION_OFFSET);
@@ -77,7 +77,10 @@ namespace dCover.Geral
 
 		private unsafe bool startProcess()
 		{
-			if(module.isHosted)
+            if (!Directory.Exists(module.startDirectory))
+                module.startDirectory = Environment.CurrentDirectory;
+            
+            if(module.isHosted)
 			{
 				#region Initialize hosted module
 				string destinationModule = Path.GetDirectoryName(module.host) + "\\" + Path.GetFileName(module.moduleFile);
@@ -103,7 +106,7 @@ namespace dCover.Geral
 				}
 				catch{}
 
-				CreateProcess(module.host, module.parameters, 0, 0, false, 2, 0, null, ref startupInfo, out processInformation);
+				CreateProcess(module.host, module.parameters, 0, 0, false, 2, 0, module.startDirectory, ref startupInfo, out processInformation);
 
                 uint stringReference = vAllocExNuma(processInformation.hProcess, 0, 0x1000, 0x1000, 4, 0);
 				uint bytesWritten = 0;
@@ -121,7 +124,7 @@ namespace dCover.Geral
 			}
 			else
 			{
-				CreateProcess(module.moduleFile, module.parameters, 0, 0, false, 2, 0, null, ref startupInfo, out processInformation);
+				CreateProcess(module.moduleFile, module.parameters, 0, 0, false, 2, 0, module.startDirectory, ref startupInfo, out processInformation);
 			}
 			
 			if(processInformation.hProcess == 0)
@@ -231,7 +234,7 @@ namespace dCover.Geral
 								setInitialBreakpoints();
 							}
 
-                            Console.WriteLine("[" + Path.GetFileName(module.moduleFile) + "] Loaded " + finalNameBuffer);
+                            //Console.WriteLine("[" + Path.GetFileName(module.moduleFile) + "] Loaded " + finalNameBuffer);
 							break;
                             #endregion
                         }

@@ -53,8 +53,23 @@ namespace dCover.Geral
 				moduleNode.SetAttributeValue("active", x.isActive);
 				moduleNode.SetAttributeValue("host", x.host);
 				moduleNode.SetAttributeValue("param", x.parameters);
-				moduleNode.SetAttributeValue("service", x.isService);	
-				moduleNode.SetAttributeValue("hosted", x.isHosted);		
+				moduleNode.SetAttributeValue("service", x.isService);
+                moduleNode.SetAttributeValue("hosted", x.isHosted);
+                moduleNode.SetAttributeValue("directory", x.startDirectory);
+
+                foreach (string y in x.selectedSourceFiles)
+                {
+                    XElement selectedSource = new XElement("activeSource");
+                    selectedSource.SetAttributeValue("name", y);
+                    moduleNode.Add(selectedSource);
+                }
+
+                foreach (string y in x.selectedRoutines)
+                {
+                    XElement selectedRoutine = new XElement("activeRoutine");
+                    selectedRoutine.SetAttributeValue("name", y);
+                    moduleNode.Add(selectedRoutine);
+                }
 				
 				moduleFilesNode.Add(moduleNode);
 			}
@@ -103,6 +118,17 @@ namespace dCover.Geral
 				projectModule.isService = Convert.ToBoolean(x.Attribute("service").Value);
 				projectModule.parameters = x.Attribute("param").Value;
 				projectModule.isHosted = Convert.ToBoolean(x.Attribute("hosted").Value);
+                projectModule.startDirectory = x.Attribute("directory").Value;
+
+                foreach (XElement y in x.Descendants("activeSource"))
+                {
+                    projectModule.selectedSourceFiles.Add(y.Attribute("name").Value);
+                }
+
+                foreach (XElement y in x.Descendants("activeRoutine"))
+                {
+                    projectModule.selectedRoutines.Add(y.Attribute("name").Value);
+                }
 
 				moduleFiles.Add(projectModule);
 			}
@@ -145,12 +171,14 @@ namespace dCover.Geral
 		public string moduleFile;
 		public string hash = ""; //Remove initialization after complete implementation
 		public string host = "";
-		public string parameters = "";	
+		public string parameters = "";
+        public string startDirectory = "";
 		public bool   isActive = true;
 		public bool   isService = false;
-		public bool   isHosted = false;
+		public bool   isHosted = false;        
 
-		public List<string> selectedSourceFiles = new List<string>(); //Must be implemented
+        public List<string> selectedSourceFiles = new List<string>();
+        public List<string> selectedRoutines = new List<string>();
 	}
 
 }

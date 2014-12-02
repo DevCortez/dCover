@@ -45,7 +45,9 @@ namespace dCover.Forms
 							{
 								//Main module itself should be covered
 								ProjectModule projectModule = project.moduleFiles.Where(x => x.moduleFile.Contains(currentProcess.MainModule.ModuleName)).First();
-								new ProjectProcess().AttachToProcess(currentProcess, projectModule, project);
+                                
+                                if(projectModule.isActive)
+								    new ProjectProcess().AttachToProcess(currentProcess, projectModule, project);
 							}
 
 							foreach(ProcessModule module in currentProcess.Modules)
@@ -72,26 +74,44 @@ namespace dCover.Forms
 			clbProject.Items.Clear();
 			(tvaRoutines.Model as TreeModel).Nodes.Clear();
 
-			foreach(string x in project.moduleFiles.Select(x => x.moduleFile).Distinct())
+			foreach(ProjectModule x in project.moduleFiles)
 			{
-				string moduleName = Path.GetFileName(x);
-				clbProject.Items.Add(moduleName, project.moduleFiles.Where(y => y.moduleFile == x).First().isActive);
+				string moduleName = Path.GetFileName(x.moduleFile);
+				clbProject.Items.Add(moduleName, x.isActive);
+
+                ModuleNode moduleNode = new ModuleNode();
+                moduleNode.Text = moduleName;
+                moduleNode.module = x;
+                moduleNode.CheckState = x.isActive ? CheckState.Checked : CheckState.Unchecked;                
+                
+                (tvaRoutines.Model as TreeModel).Nodes.Add(moduleNode);
+
+                foreach(string sourceFile in project.coveragePointList.Select(y => y.sourceFile).Distinct())
+			    {
+				    string sourceFileName = Path.GetFileName(sourceFile);
+                    string sourceFilePath = FileHelper.recursiveFileSearch(sourceFileName, project.sourceFolders.Where(y => y.moduleName == moduleName).Select(y => y.path).First(), 3);
+				    UnitNode unitNode = new UnitNode();
+				    unitNode.Text = sourceFileName;
+                    unitNode.Tag = unitNode;
+                    unitNode.sourceFile = sourceFilePath;
+                    unitNode.CheckState = x.selectedSourceFiles.Contains(sourceFileName) ? CheckState.Checked : CheckState.Unchecked;
+                    unitNode.module = x;
+				    moduleNode.Nodes.Add(unitNode);
+
+				    foreach(string routine in project.coveragePointList.Where(y => y.sourceFile.Contains(sourceFileName)).Select(y => y.routineName).Distinct())
+				    {
+					    RoutineNode routineNode = new RoutineNode();
+					    routineNode.Text = routine;
+                        routineNode.Tag = routineNode;
+                        routineNode.sourceFile = sourceFilePath;
+                        routineNode.CheckState = x.selectedRoutines.Contains(routine) ? CheckState.Checked : CheckState.Unchecked;
+                        routineNode.module = x;
+                        unitNode.Nodes.Add(routineNode);                        
+				    }
+			    }
 			}
 
-			foreach(string sourceFile in project.coveragePointList.Select(x => x.sourceFile).Distinct())
-			{
-				string sourceFileName = Path.GetFileName(sourceFile);
-				UnitNode unitNode = new UnitNode();
-				unitNode.Text = sourceFileName;
-				(tvaRoutines.Model as TreeModel).Nodes.Add(unitNode);
-
-				foreach(string routine in project.coveragePointList.Where(x => x.sourceFile.Contains(sourceFileName)).Select(x => x.routineName).Distinct())
-				{
-					RoutineNode routineNode = new RoutineNode();
-					routineNode.Text = routine;
-					unitNode.Nodes.Add(routineNode);
-				}
-			}
+			
 		}
 
 		private void updateProjectInformation()
@@ -308,17 +328,132 @@ namespace dCover.Forms
 
 			txtHost.Text = findHost.FileName;
 		}
-		
-		private class ModuleNode : Node
+
+        private class BaseNode : Node
+        {
+            public ProjectModule module;
+        }
+
+        private class ModuleNode : BaseNode
 		{
-		}
-		
-		private class UnitNode : Node
-		{			
 		}
 
-		private class RoutineNode : Node
+        private class UnitNode : BaseNode
 		{
-		}	
+            public string sourceFile;
+		}
+
+        private class RoutineNode : BaseNode
+		{
+            public string sourceFile;            
+		}
+
+        private void validateSelectedPoints()
+        {
+            foreach (var x in tvaRoutines.AllNodes)
+            {
+                if ((x.Tag as BaseNode).module.selectedSourceFiles.Contains((x.Tag as BaseNode).Text) && !((x.Tag as BaseNode).CheckState == CheckState.Checked))
+                    (x.Tag as BaseNode).module.selectedSourceFiles = (x.Tag as BaseNode).module.selectedSourceFiles.Where(y => y != (x.Tag as BaseNode).Text).ToList();
+                else if (!(x.Tag as BaseNode).module.selectedSourceFiles.Contains((x.Tag as BaseNode).Text) && ((x.Tag as BaseNode).CheckState == CheckState.Checked))
+                    (x.Tag as BaseNode).module.selectedSourceFiles.Add((x.Tag as BaseNode).Text);
+
+                if ((x.Tag as BaseNode).module.selectedRoutines.Contains((x.Tag as BaseNode).Text) && !((x.Tag as BaseNode).CheckState == CheckState.Checked))
+                    (x.Tag as BaseNode).module.selectedRoutines = (x.Tag as BaseNode).module.selectedRoutines.Where(y => y != (x.Tag as BaseNode).Text).ToList();
+                else if (!(x.Tag as BaseNode).module.selectedRoutines.Contains((x.Tag as BaseNode).Text) && ((x.Tag as BaseNode).CheckState == CheckState.Checked))
+                    (x.Tag as BaseNode).module.selectedRoutines.Add((x.Tag as BaseNode).Text);
+            }
+        }
+        
+        private void tvaRoutines_SelectionChanged(object sender, EventArgs e)
+        {
+            txtCodeSnippet.Clear();            
+            
+            #region Update selected coverage information
+            foreach (var x in tvaRoutines.SelectedNodes)
+            {                
+                if (x.Tag is UnitNode)
+                {                                       
+                    RichTextBox contentHolder = new RichTextBox();
+                    contentHolder.WordWrap = false;
+                   
+                    foreach (string z in File.ReadAllLines((x.Tag as UnitNode).sourceFile))
+                    {
+                        contentHolder.AppendText((contentHolder.Lines.Count() + 1).ToString("00") + (char)9 + z + "\n");
+                    }
+                    
+                    contentHolder.SelectAll();
+                    contentHolder.SelectionFont = new Font("Verdana", 10);
+
+                    foreach (CoveragePoint y in project.coveragePointList.Where(y => (x.Tag as UnitNode).sourceFile.ToLower().Contains(y.sourceFile.ToLower())))
+                    {
+                        contentHolder.Select(contentHolder.GetFirstCharIndexFromLine(y.lineNumber - 1), contentHolder.Lines[y.lineNumber - 1].Length);
+
+                        if (y.wasCovered)
+                            contentHolder.SelectionColor = Color.Green;
+                        else
+                            contentHolder.SelectionColor = Color.Red;                        
+                    }
+
+                    txtCodeSnippet.Select(txtCodeSnippet.Text.Length, 0);
+                    txtCodeSnippet.SelectedRtf = contentHolder.Rtf;
+                    
+                    contentHolder.Dispose();
+                }
+                else if(x.Tag is RoutineNode)
+                {
+                    RichTextBox contentHolder = new RichTextBox();
+                    contentHolder.WordWrap = false;
+                    foreach (string z in File.ReadAllLines((x.Tag as RoutineNode).sourceFile))
+                    {
+                        contentHolder.AppendText((contentHolder.Lines.Count() + 1).ToString("00") + (char)9 + z + "\n");
+                    }
+
+                    contentHolder.SelectAll();
+                    contentHolder.SelectionFont = new Font("Verdana", 10);
+                    List<int> relevantLines = new List<int>();
+
+                    foreach (CoveragePoint y in project.coveragePointList.Where(y => (x.Tag as RoutineNode).Text == y.routineName))
+                    {
+                        for (int i = -3; i < 2; i++)                            
+                            relevantLines.Add(y.lineNumber + i);
+
+                        contentHolder.Select(contentHolder.GetFirstCharIndexFromLine(y.lineNumber - 1), contentHolder.Lines[y.lineNumber - 1].Length);
+
+                        if (y.wasCovered)
+                            contentHolder.SelectionColor = Color.Green;
+                        else
+                            contentHolder.SelectionColor = Color.Red;
+                    }
+
+                    relevantLines = relevantLines.Distinct().OrderBy(z => z).ToList();
+
+                    contentHolder.Select(contentHolder.GetFirstCharIndexFromLine(relevantLines.First()), contentHolder.GetFirstCharIndexFromLine(relevantLines.Last() + 1) - contentHolder.GetFirstCharIndexFromLine(relevantLines.First()));
+
+                    txtCodeSnippet.AppendText("{" + (x.Tag as RoutineNode).Text + "}" + System.Environment.NewLine);
+                    txtCodeSnippet.Select(txtCodeSnippet.GetFirstCharIndexFromLine(txtCodeSnippet.Lines.Count() - 2), txtCodeSnippet.GetFirstCharIndexFromLine(txtCodeSnippet.Lines.Count() - 1));
+                    txtCodeSnippet.SelectionColor = Color.BlueViolet;
+                    txtCodeSnippet.Select(txtCodeSnippet.Text.Length, 0);
+                    txtCodeSnippet.SelectedRtf = contentHolder.SelectedRtf;
+                    txtCodeSnippet.AppendText(System.Environment.NewLine);
+
+                    contentHolder.Dispose();
+                }
+                else if(x.Tag is ModuleNode)
+                {
+
+                }
+            }
+            #endregion
+        }
+
+        private void tvaRoutines_Click(object sender, EventArgs e)
+        {
+            validateSelectedPoints();
+        }
+
+        private void tvaRoutines_KeyDown(object sender, KeyEventArgs e)
+        {
+            validateSelectedPoints();
+        }	
 	}
 }

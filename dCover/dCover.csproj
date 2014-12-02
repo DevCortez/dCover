@@ -54,6 +54,7 @@
       <DependentUpon>frmPrincipal.cs</DependentUpon>
     </Compile>
     <Compile Include="Geral\CoveragePoint.cs" />
+    <Compile Include="Geral\FileHelper.cs" />
     <Compile Include="Geral\MapParser.cs" />
     <Compile Include="Geral\ProjectProcess.cs" />
     <Compile Include="Geral\Project.cs" />
