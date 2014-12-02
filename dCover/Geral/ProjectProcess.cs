@@ -103,7 +103,7 @@ namespace dCover.Geral
 				}
 				catch{}
 
-				CreateProcess(module.host, module.parameters, 0, 0, false, 2, 0, null, ref startupInfo, out processInformation);
+				CreateProcess(module.host, module.parameters, 0, 0, false, 2, 0, module.startDirectory, ref startupInfo, out processInformation);
 
                 uint stringReference = vAllocExNuma(processInformation.hProcess, 0, 0x1000, 0x1000, 4, 0);
 				uint bytesWritten = 0;
@@ -121,7 +121,7 @@ namespace dCover.Geral
 			}
 			else
 			{
-				CreateProcess(module.moduleFile, module.parameters, 0, 0, false, 2, 0, null, ref startupInfo, out processInformation);
+				CreateProcess(module.moduleFile, module.parameters, 0, 0, false, 2, 0, module.startDirectory, ref startupInfo, out processInformation);
 			}
 			
 			if(processInformation.hProcess == 0)

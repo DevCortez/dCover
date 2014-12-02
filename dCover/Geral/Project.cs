@@ -53,8 +53,9 @@ namespace dCover.Geral
 				moduleNode.SetAttributeValue("active", x.isActive);
 				moduleNode.SetAttributeValue("host", x.host);
 				moduleNode.SetAttributeValue("param", x.parameters);
-				moduleNode.SetAttributeValue("service", x.isService);	
-				moduleNode.SetAttributeValue("hosted", x.isHosted);		
+				moduleNode.SetAttributeValue("service", x.isService);
+                moduleNode.SetAttributeValue("hosted", x.isHosted);
+                moduleNode.SetAttributeValue("directory", x.startDirectory);	
 				
 				moduleFilesNode.Add(moduleNode);
 			}
@@ -103,6 +104,7 @@ namespace dCover.Geral
 				projectModule.isService = Convert.ToBoolean(x.Attribute("service").Value);
 				projectModule.parameters = x.Attribute("param").Value;
 				projectModule.isHosted = Convert.ToBoolean(x.Attribute("hosted").Value);
+                projectModule.startDirectory = x.Attribute("directory").Value;                
 
 				moduleFiles.Add(projectModule);
 			}
@@ -145,10 +147,11 @@ namespace dCover.Geral
 		public string moduleFile;
 		public string hash = ""; //Remove initialization after complete implementation
 		public string host = "";
-		public string parameters = "";	
+		public string parameters = "";
+        public string startDirectory = "";
 		public bool   isActive = true;
 		public bool   isService = false;
-		public bool   isHosted = false;
+		public bool   isHosted = false;        
 
         public List<string> selectedSourceFiles = new List<string>();
         public List<string> selectedRoutines = new List<string>();
