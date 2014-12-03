@@ -463,8 +463,7 @@
 			// 
 			// txtFindRoutines
 			// 
-			this.txtFindRoutines.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-			this.txtFindRoutines.Location = new System.Drawing.Point(8, 292);
+			this.txtFindRoutines.Location = new System.Drawing.Point(220, 3);
 			this.txtFindRoutines.Name = "txtFindRoutines";
 			this.txtFindRoutines.Size = new System.Drawing.Size(20, 20);
 			this.txtFindRoutines.TabIndex = 5;

@@ -95,7 +95,7 @@ namespace dCover.Forms
                 moduleNode.module = x;
                 moduleNode.CheckState = x.isActive ? CheckState.Checked : CheckState.Unchecked;                                               
 
-                foreach(string sourceFile in project.coveragePointList.Select(y => y.sourceFile).Distinct())
+                foreach(string sourceFile in project.coveragePointList.Where(y => y.moduleName == moduleName).Select(y => y.sourceFile).Distinct())
 			    {
 				    string sourceFileName = Path.GetFileName(sourceFile);
                     string sourceFilePath = FileHelper.recursiveFileSearch(sourceFileName, project.sourceFolders.Where(y => y.moduleName == moduleName).Select(y => y.path).First(), 3);
@@ -405,87 +405,92 @@ namespace dCover.Forms
                     (x.Tag as BaseNode).module.selectedRoutines.Add((x.Tag as BaseNode).Text);
             }
         }
+
+		private void updateSourceCodeSnippets()
+		{
+			#region Update selected coverage information
+			foreach (var x in tvaRoutines.SelectedNodes)
+			{
+				if (x.Tag is UnitNode)
+				{
+					RichTextBox contentHolder = new RichTextBox();
+					contentHolder.WordWrap = false;
+
+					foreach (string z in File.ReadAllLines((x.Tag as UnitNode).sourceFile))
+					{
+						contentHolder.AppendText((contentHolder.Lines.Count() + 1).ToString("00") + (char)9 + z + "\n");
+					}
+
+					contentHolder.SelectAll();
+					contentHolder.SelectionFont = new Font("Verdana", 10);
+
+					foreach (CoveragePoint y in project.coveragePointList.Where(y => (x.Tag as UnitNode).sourceFile.ToLower().Contains(y.sourceFile.ToLower())))
+					{
+						contentHolder.Select(contentHolder.GetFirstCharIndexFromLine(y.lineNumber - 1), contentHolder.Lines[y.lineNumber - 1].Length);
+
+						if (y.wasCovered)
+							contentHolder.SelectionColor = Color.Green;
+						else
+							contentHolder.SelectionColor = Color.Red;
+					}
+
+					txtCodeSnippet.Select(txtCodeSnippet.Text.Length, 0);
+					txtCodeSnippet.SelectedRtf = contentHolder.Rtf;
+
+					contentHolder.Dispose();
+				}
+				else if (x.Tag is RoutineNode)
+				{
+					RichTextBox contentHolder = new RichTextBox();
+					contentHolder.WordWrap = false;
+					foreach (string z in File.ReadAllLines((x.Tag as RoutineNode).sourceFile))
+					{
+						contentHolder.AppendText((contentHolder.Lines.Count() + 1).ToString("00") + (char)9 + z + "\n");
+					}
+
+					contentHolder.SelectAll();
+					contentHolder.SelectionFont = new Font("Verdana", 10);
+					List<int> relevantLines = new List<int>();
+
+					foreach (CoveragePoint y in project.coveragePointList.Where(y => (x.Tag as RoutineNode).Text == y.routineName))
+					{
+						for (int i = -3; i < 2; i++)
+							relevantLines.Add(y.lineNumber + i);
+
+						contentHolder.Select(contentHolder.GetFirstCharIndexFromLine(y.lineNumber - 1), contentHolder.Lines[y.lineNumber - 1].Length);
+
+						if (y.wasCovered)
+							contentHolder.SelectionColor = Color.Green;
+						else
+							contentHolder.SelectionColor = Color.Red;
+					}
+
+					relevantLines = relevantLines.Distinct().OrderBy(z => z).ToList();
+
+					contentHolder.Select(contentHolder.GetFirstCharIndexFromLine(relevantLines.First()), contentHolder.GetFirstCharIndexFromLine(relevantLines.Last() + 1) - contentHolder.GetFirstCharIndexFromLine(relevantLines.First()));
+
+					txtCodeSnippet.AppendText("{" + (x.Tag as RoutineNode).Text + "}" + System.Environment.NewLine);
+					txtCodeSnippet.Select(txtCodeSnippet.GetFirstCharIndexFromLine(txtCodeSnippet.Lines.Count() - 2), txtCodeSnippet.GetFirstCharIndexFromLine(txtCodeSnippet.Lines.Count() - 1));
+					txtCodeSnippet.SelectionColor = Color.BlueViolet;
+					txtCodeSnippet.Select(txtCodeSnippet.Text.Length, 0);
+					txtCodeSnippet.SelectedRtf = contentHolder.SelectedRtf;
+					txtCodeSnippet.AppendText(System.Environment.NewLine);
+
+					contentHolder.Dispose();
+				}
+				else if (x.Tag is ModuleNode)
+				{
+
+				}
+			}
+			#endregion
+		}
         
         private void tvaRoutines_SelectionChanged(object sender, EventArgs e)
         {
             txtCodeSnippet.Clear();            
             
-            #region Update selected coverage information
-            foreach (var x in tvaRoutines.SelectedNodes)
-            {                
-                if (x.Tag is UnitNode)
-                {                                       
-                    RichTextBox contentHolder = new RichTextBox();
-                    contentHolder.WordWrap = false;
-                   
-                    foreach (string z in File.ReadAllLines((x.Tag as UnitNode).sourceFile))
-                    {
-                        contentHolder.AppendText((contentHolder.Lines.Count() + 1).ToString("00") + (char)9 + z + "\n");
-                    }
-                    
-                    contentHolder.SelectAll();
-                    contentHolder.SelectionFont = new Font("Verdana", 10);
-
-                    foreach (CoveragePoint y in project.coveragePointList.Where(y => (x.Tag as UnitNode).sourceFile.ToLower().Contains(y.sourceFile.ToLower())))
-                    {
-                        contentHolder.Select(contentHolder.GetFirstCharIndexFromLine(y.lineNumber - 1), contentHolder.Lines[y.lineNumber - 1].Length);
-
-                        if (y.wasCovered)
-                            contentHolder.SelectionColor = Color.Green;
-                        else
-                            contentHolder.SelectionColor = Color.Red;                        
-                    }
-
-                    txtCodeSnippet.Select(txtCodeSnippet.Text.Length, 0);
-                    txtCodeSnippet.SelectedRtf = contentHolder.Rtf;
-                    
-                    contentHolder.Dispose();
-                }
-                else if(x.Tag is RoutineNode)
-                {
-                    RichTextBox contentHolder = new RichTextBox();
-                    contentHolder.WordWrap = false;
-                    foreach (string z in File.ReadAllLines((x.Tag as RoutineNode).sourceFile))
-                    {
-                        contentHolder.AppendText((contentHolder.Lines.Count() + 1).ToString("00") + (char)9 + z + "\n");
-                    }
-
-                    contentHolder.SelectAll();
-                    contentHolder.SelectionFont = new Font("Verdana", 10);
-                    List<int> relevantLines = new List<int>();
-
-                    foreach (CoveragePoint y in project.coveragePointList.Where(y => (x.Tag as RoutineNode).Text == y.routineName))
-                    {
-                        for (int i = -3; i < 2; i++)                            
-                            relevantLines.Add(y.lineNumber + i);
-
-                        contentHolder.Select(contentHolder.GetFirstCharIndexFromLine(y.lineNumber - 1), contentHolder.Lines[y.lineNumber - 1].Length);
-
-                        if (y.wasCovered)
-                            contentHolder.SelectionColor = Color.Green;
-                        else
-                            contentHolder.SelectionColor = Color.Red;
-                    }
-
-                    relevantLines = relevantLines.Distinct().OrderBy(z => z).ToList();
-
-                    contentHolder.Select(contentHolder.GetFirstCharIndexFromLine(relevantLines.First()), contentHolder.GetFirstCharIndexFromLine(relevantLines.Last() + 1) - contentHolder.GetFirstCharIndexFromLine(relevantLines.First()));
-
-                    txtCodeSnippet.AppendText("{" + (x.Tag as RoutineNode).Text + "}" + System.Environment.NewLine);
-                    txtCodeSnippet.Select(txtCodeSnippet.GetFirstCharIndexFromLine(txtCodeSnippet.Lines.Count() - 2), txtCodeSnippet.GetFirstCharIndexFromLine(txtCodeSnippet.Lines.Count() - 1));
-                    txtCodeSnippet.SelectionColor = Color.BlueViolet;
-                    txtCodeSnippet.Select(txtCodeSnippet.Text.Length, 0);
-                    txtCodeSnippet.SelectedRtf = contentHolder.SelectedRtf;
-                    txtCodeSnippet.AppendText(System.Environment.NewLine);
-
-                    contentHolder.Dispose();
-                }
-                else if(x.Tag is ModuleNode)
-                {
-
-                }
-            }
-            #endregion
+            updateSourceCodeSnippets();
         }
 
         private void tvaRoutines_Click(object sender, EventArgs e)
