@@ -102,11 +102,8 @@ namespace dCover.Geral
 					ProjectModule projectModule = new ProjectModule();
 					projectModule.moduleFile = moduleFile;
 
-					foreach(var x in coveragePoints.Select(x => x.sourceFile).Distinct())
-						projectModule.selectedSourceFiles.Add(x);
-
-                    foreach (var x in coveragePoints.Select(x => x.routineName).Distinct())
-                        projectModule.selectedRoutines.Add(x);
+                    coveragePoints.Select(x => x.sourceFile).ToList().ForEach(x => projectModule.selectedSourceFiles.Add(x));
+                    coveragePoints.Select(x => x.routineName).ToList().ForEach(x => projectModule.selectedRoutines.Add(x));
 
 					project.moduleFiles.Add(projectModule);
 				}
