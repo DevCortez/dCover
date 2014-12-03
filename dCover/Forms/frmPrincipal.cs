@@ -454,7 +454,8 @@ namespace dCover.Forms
 					foreach (CoveragePoint y in project.coveragePointList.Where(y => (x.Tag as RoutineNode).Text == y.routineName))
 					{
 						for (int i = -3; i < 2; i++)
-							relevantLines.Add(y.lineNumber + i);
+							if(y.lineNumber<contentHolder.Lines.Count())
+                                relevantLines.Add(y.lineNumber + i);
 
 						contentHolder.Select(contentHolder.GetFirstCharIndexFromLine(y.lineNumber - 1), contentHolder.Lines[y.lineNumber - 1].Length);
 
@@ -462,9 +463,22 @@ namespace dCover.Forms
 							contentHolder.SelectionColor = Color.Green;
 						else
 							contentHolder.SelectionColor = Color.Red;
+
+                        relevantLines = relevantLines.Distinct().OrderBy(z => z).ToList();
+
+                        contentHolder.Select(contentHolder.GetFirstCharIndexFromLine(relevantLines.First()), contentHolder.GetFirstCharIndexFromLine(relevantLines.Last() + 1) - contentHolder.GetFirstCharIndexFromLine(relevantLines.First()));
+
+                        txtCodeSnippet.AppendText("{" + (x.Tag as RoutineNode).Text + "}" + System.Environment.NewLine);
+                        txtCodeSnippet.Select(txtCodeSnippet.GetFirstCharIndexFromLine(txtCodeSnippet.Lines.Count() - 2), txtCodeSnippet.GetFirstCharIndexFromLine(txtCodeSnippet.Lines.Count() - 1));
+                        txtCodeSnippet.SelectionColor = Color.BlueViolet;
+                        txtCodeSnippet.Select(txtCodeSnippet.Text.Length, 0);
+                        txtCodeSnippet.SelectedRtf = contentHolder.SelectedRtf;
+                        txtCodeSnippet.AppendText(System.Environment.NewLine);
+
+                        relevantLines.Clear();
 					}
 
-					relevantLines = relevantLines.Distinct().OrderBy(z => z).ToList();
+					/*relevantLines = relevantLines.Distinct().OrderBy(z => z).ToList();
 
 					contentHolder.Select(contentHolder.GetFirstCharIndexFromLine(relevantLines.First()), contentHolder.GetFirstCharIndexFromLine(relevantLines.Last() + 1) - contentHolder.GetFirstCharIndexFromLine(relevantLines.First()));
 
@@ -473,7 +487,7 @@ namespace dCover.Forms
 					txtCodeSnippet.SelectionColor = Color.BlueViolet;
 					txtCodeSnippet.Select(txtCodeSnippet.Text.Length, 0);
 					txtCodeSnippet.SelectedRtf = contentHolder.SelectedRtf;
-					txtCodeSnippet.AppendText(System.Environment.NewLine);
+					txtCodeSnippet.AppendText(System.Environment.NewLine);*/
 
 					contentHolder.Dispose();
 				}
