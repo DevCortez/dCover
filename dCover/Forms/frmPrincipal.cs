@@ -506,6 +506,17 @@ namespace dCover.Forms
 		private void txtFindRoutines_KeyPress(object sender, KeyPressEventArgs e)
 		{
 			updateProjectOverview();
+		}
+
+		private void txtFindRoutines_Enter(object sender, EventArgs e)
+		{
+			txtFindRoutines.SetBounds(txtFindRoutines.Location.X, txtFindRoutines.Location.Y, 200, 20);
+		}
+
+		private void txtFindRoutines_Leave(object sender, EventArgs e)
+		{
+			if(txtFindRoutines.Text.Length == 0)
+				txtFindRoutines.SetBounds(txtFindRoutines.Location.X, txtFindRoutines.Location.Y, 20, 20);
 		}	
 	}
 }

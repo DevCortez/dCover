@@ -463,11 +463,14 @@
 			// 
 			// txtFindRoutines
 			// 
-			this.txtFindRoutines.Location = new System.Drawing.Point(3, 292);
+			this.txtFindRoutines.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+			this.txtFindRoutines.Location = new System.Drawing.Point(8, 292);
 			this.txtFindRoutines.Name = "txtFindRoutines";
-			this.txtFindRoutines.Size = new System.Drawing.Size(184, 20);
+			this.txtFindRoutines.Size = new System.Drawing.Size(20, 20);
 			this.txtFindRoutines.TabIndex = 5;
+			this.txtFindRoutines.Enter += new System.EventHandler(this.txtFindRoutines_Enter);
 			this.txtFindRoutines.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtFindRoutines_KeyPress);
+			this.txtFindRoutines.Leave += new System.EventHandler(this.txtFindRoutines_Leave);
 			// 
 			// frmPrincipal
 			// 
