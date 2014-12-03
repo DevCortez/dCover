@@ -408,7 +408,6 @@ namespace dCover.Forms
 
 		private void updateSourceCodeSnippets()
 		{
-			#region Update selected coverage information
 			foreach (var x in tvaRoutines.SelectedNodes)
 			{
 				if (x.Tag is UnitNode)
@@ -483,7 +482,6 @@ namespace dCover.Forms
 
 				}
 			}
-			#endregion
 		}
         
         private void tvaRoutines_SelectionChanged(object sender, EventArgs e)

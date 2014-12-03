@@ -72,8 +72,8 @@ namespace dCover.Geral
 		}
 
 		private static void setFunctionNames(IEnumerable<CoveragePoint> points, IEnumerable<FunctionName> names)
-		{
-			foreach(CoveragePoint currentPoint in points)
+		{            
+            foreach(CoveragePoint currentPoint in points)
 				currentPoint.routineName = (from x in names where currentPoint.offset >= x.offset select x).First().name;
 		}
 

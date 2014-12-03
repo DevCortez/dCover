@@ -28,7 +28,7 @@ namespace dCover.Geral
 			List<Tuple<int, int>> validLines = new List<Tuple<int, int>>();
 			List<CoveragePoint> filteredPoints = new List<CoveragePoint>();
 
-            foreach (Match x in Regex.Matches(sourceCode, @"\s(begin|if\s[^\n]*|except|else|do|repeat)()\s", RegexOptions.IgnoreCase))
+            foreach (Match x in Regex.Matches(sourceCode, @"\s(begin|\)?then\s*\n?|except|else|do|repeat)()\s", RegexOptions.IgnoreCase))
 			{
                 validLines.Add(Tuple.Create(getLineFromPoint(sourceCode, x.Groups[2].Index), getNextTokenLine(sourceCode, x.Groups[2].Index)));
 			}
