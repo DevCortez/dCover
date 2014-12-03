@@ -187,6 +187,8 @@ namespace dCover.Geral
                                 break;
                             
                             #region Check modules being loaded
+                            
+                            #region Read dll name
                             byte[] dllNameBuffer;
 							uint dllNamePointer = 0;
 							uint bytesRead = 0;
@@ -231,16 +233,17 @@ namespace dCover.Geral
 								finalNameBuffer = Encoding.ASCII.GetString(dllNameBuffer);
 							else
 								finalNameBuffer = Encoding.Unicode.GetString(dllNameBuffer);
+                            #endregion
 
-							if(finalNameBuffer.Contains(Path.GetFileName(module.moduleFile)))
+                            if (finalNameBuffer.Contains(Path.GetFileName(module.moduleFile)))
 							{
 								baseAddress = debugEvent.LoadDll.lpBaseOfDll;
 								setInitialBreakpoints();
 							}
 
-                            //Console.WriteLine("[" + Path.GetFileName(module.moduleFile) + "] Loaded " + finalNameBuffer);
 							break;
                             #endregion
+
                             #endregion
                         }
 
@@ -250,11 +253,10 @@ namespace dCover.Geral
                             Console.WriteLine("Process " + module.moduleFile + " died");
                             mainProject.runningProcesses.Remove(mainProject.runningProcesses.Where(x => x.Id == processId).First());
                             return;
-                            break;
                             #endregion
                         }
 
-                    default: //Could be reverted
+                    default:
                         {
                             #region Default (Breakpoint hit)
                             if (debugEvent.Exception.ExceptionRecord.ExceptionCode != STATUS_BREAKPOINT)
@@ -267,26 +269,28 @@ namespace dCover.Geral
                             
                             if(currentPoint != null && currentPoint.isSet)
                             {
-                                #region Handle breakpoint
-                                Console.WriteLine("[" + currentPoint.moduleName + "] Executed line " + currentPoint.lineNumber + " -> " + currentPoint.sourceFile + " @ " + currentPoint.routineName);
-
+                                #region Handle breakpoint                               
+                                
+                                #region Restore original code
                                 byte originalValue = currentPoint.originalCode;
                                 uint bytesWritten = 0;
 
 								WriteProcessMemory(handle, debugEvent.Exception.ExceptionRecord.ExceptionAddress, &originalValue, 1, ref bytesWritten);
-								currentPoint.wasCovered = true;
+                                #endregion
+
+                                currentPoint.wasCovered = true;
 								currentPoint.isSet = false;
-                                
+
+                                #region Restore thread to original state
                                 ThreadContext threadContext = new ThreadContext();
                                 threadContext.ContextFlags = 0x10001;
-                                uint threadHandle = OpenThread(0x001F03FF, false, debugEvent.dwThreadId); //THREAD_ALL_ACCESS
-
-                                if (!GetThreadContext(threadHandle, ref threadContext))
-                                    Console.WriteLine(GetLastError());
+                                uint threadHandle = OpenThread(0x001F03FF, false, debugEvent.dwThreadId);
 
                                 threadContext.Eip--;
                                 SetThreadContext(threadHandle, ref threadContext);
                                 CloseHandle(threadHandle);
+                                #endregion
+
                                 #endregion
                             }
                             
