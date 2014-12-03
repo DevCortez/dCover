@@ -156,7 +156,8 @@ namespace dCover.Geral
 
 				continueStatus = 0x00010002;
 
-				if(!breakpointsAreSet)
+                #region Hosted module breakpoint watcher
+                if (!breakpointsAreSet)
 				{
 					if (module.isHosted)
 					{
@@ -173,12 +174,15 @@ namespace dCover.Geral
 						}
 						catch{}
 					}
-				}
-				
-				switch(debugEvent.dwDebugEventCode)
+                }
+                #endregion
+
+                #region Debug event handle
+                switch (debugEvent.dwDebugEventCode)
 				{
 					case LOAD_DLL_DEBUG_EVENT:
                         {
+                            #region LOAD_DLL_DEBUG_EVENT
                             if (debugEvent.LoadDll.lpImageName == 0)
                                 break;
                             
@@ -237,19 +241,23 @@ namespace dCover.Geral
                             //Console.WriteLine("[" + Path.GetFileName(module.moduleFile) + "] Loaded " + finalNameBuffer);
 							break;
                             #endregion
+                            #endregion
                         }
 
                     case EXIT_PROCESS_DEBUG_EVENT:
                         {
+                            #region EXIT_PROCESS_DEBUG_EVENT
                             Console.WriteLine("Process " + module.moduleFile + " died");
                             mainProject.runningProcesses.Remove(mainProject.runningProcesses.Where(x => x.Id == processId).First());
                             return;
                             break;
+                            #endregion
                         }
 
                     default: //Could be reverted
-						{
-							if(debugEvent.Exception.ExceptionRecord.ExceptionCode != STATUS_BREAKPOINT)
+                        {
+                            #region Default (Breakpoint hit)
+                            if (debugEvent.Exception.ExceptionRecord.ExceptionCode != STATUS_BREAKPOINT)
 							{
 								continueStatus = 0x80010001;
 								break;
@@ -283,10 +291,12 @@ namespace dCover.Geral
                             }
                             
 							break;
-						}
-				}
+                            #endregion
+                        }
+                }
+                #endregion
 
-				ContinueDebugEvent(debugEvent.dwProcessId, debugEvent.dwThreadId, continueStatus);
+                ContinueDebugEvent(debugEvent.dwProcessId, debugEvent.dwThreadId, continueStatus);
 			}
 		}
 
@@ -312,8 +322,9 @@ namespace dCover.Geral
 			{
 				Console.WriteLine("Cannot attach to process");
 				return false;
-			}
+            }
 
+            #region Suspend threads
             List<ProcessThread> originalStates = (from ProcessThread x in target.Threads select x).ToList();
 
             foreach(ProcessThread x in target.Threads)
@@ -323,10 +334,11 @@ namespace dCover.Geral
                     uint threadHandle = OpenThread(0x001F03FF, false, (uint)x.Id);
                     SuspendThread(threadHandle);
                     CloseHandle(threadHandle);
-                }                
+                }
             }
+            #endregion
 
-			module = targetModule;
+            module = targetModule;
 			baseAddress = (uint)target.MainModule.BaseAddress;
             handle = OpenProcess(0x001F0FFF, false, (uint)target.Id);
             
@@ -335,7 +347,8 @@ namespace dCover.Geral
 			debuggingThread = new Thread(new ThreadStart(debuggingLoop));
 			debuggingThread.Start();
 
-            foreach(ProcessThread x in target.Threads)
+            #region Resume threads
+            foreach (ProcessThread x in target.Threads)
             {
                 if(x.ThreadState != (originalStates.Where(y => y.Id == x.Id).First()).ThreadState)
                 {
@@ -344,23 +357,22 @@ namespace dCover.Geral
                     CloseHandle(threadHandle);
                 }
             }
-			
-			project.runningProcesses.Add(target);			
+            #endregion
+
+            project.runningProcesses.Add(target);			
 			return true;
 		}
 
-		[Flags]
-		public enum HookRegister
-		{
-			None = 0,
-			DR0 = 1,
-			DR1 = 2,
-			DR2 = 4,
-			DR3 = 8
-		}
-
 		#region Structs
-
+        [Flags]
+        public enum HookRegister
+        {
+            None = 0,
+            DR0 = 1,
+            DR1 = 2,
+            DR2 = 4,
+            DR3 = 8
+        }
 
 		[StructLayout(LayoutKind.Sequential)]
 		private unsafe struct DEBUG_EVENT

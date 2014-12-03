@@ -71,17 +71,16 @@ namespace dCover.Geral
 			return coveragePoints;
 		}
 
-		private static void setFunctionNames(IEnumerable<CoveragePoint> points, IEnumerable<FunctionName> names)
-		{            
-            foreach(CoveragePoint currentPoint in points)
-				currentPoint.routineName = (from x in names where currentPoint.offset >= x.offset select x).First().name;
+		private static void setFunctionNames(List<CoveragePoint> points, IEnumerable<FunctionName> names)
+		{
+            points.ForEach(x => x.routineName = names.Where(y => x.offset >= y.offset).Select(y => y.name).First());
 		}
 
 		public static IEnumerable<CoveragePoint> Parse(string fileName)
 		{
 			List<CoveragePoint> coveragePoints = new List<CoveragePoint>();
 
-			coveragePoints = getCoveragePoints(fileName).ToList();			
+			coveragePoints = getCoveragePoints(fileName).ToList();			    
 			setFunctionNames(coveragePoints, getFunctionNames(fileName));
 
 			return coveragePoints;
