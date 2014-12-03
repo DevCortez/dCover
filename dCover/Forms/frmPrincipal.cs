@@ -37,7 +37,6 @@ namespace dCover.Forms
 					{
 						try
 						{							
-							//If already debugging this guy
 							if(pidList.Contains(currentProcess.Id))
 								continue;
 							
@@ -60,12 +59,12 @@ namespace dCover.Forms
 						}
 						catch
 						{
-							continue; //Expect exceptions due to access
+							continue; //Expect exceptions due to access &| bitness
 						}
 					}
 				}
 				
-				Thread.Sleep(1);
+				Thread.Sleep(0);
 			}
 		}
 		
@@ -74,44 +73,84 @@ namespace dCover.Forms
 			clbProject.Items.Clear();
 			(tvaRoutines.Model as TreeModel).Nodes.Clear();
 
+			bool doFiltering = txtFindRoutines.Text.Length > 0;
+			List<string> searchPattern = txtFindRoutines.Text.ToLower().Split(' ').ToList();
+
 			foreach(ProjectModule x in project.moduleFiles)
 			{
 				string moduleName = Path.GetFileName(x.moduleFile);
 				clbProject.Items.Add(moduleName, x.isActive);
 
+				bool addThisRoutine;
+				bool addThisUnit;
+				bool addThisModule;
+
+				if(doFiltering)
+					addThisModule = false;
+				else
+					addThisModule = true;
+
                 ModuleNode moduleNode = new ModuleNode();
                 moduleNode.Text = moduleName;
                 moduleNode.module = x;
-                moduleNode.CheckState = x.isActive ? CheckState.Checked : CheckState.Unchecked;                
-                
-                (tvaRoutines.Model as TreeModel).Nodes.Add(moduleNode);
+                moduleNode.CheckState = x.isActive ? CheckState.Checked : CheckState.Unchecked;                                               
 
                 foreach(string sourceFile in project.coveragePointList.Select(y => y.sourceFile).Distinct())
 			    {
 				    string sourceFileName = Path.GetFileName(sourceFile);
                     string sourceFilePath = FileHelper.recursiveFileSearch(sourceFileName, project.sourceFolders.Where(y => y.moduleName == moduleName).Select(y => y.path).First(), 3);
-				    UnitNode unitNode = new UnitNode();
+				    					
+					if(doFiltering)
+						addThisUnit = false;
+					else
+						addThisUnit = true;
+					
+					UnitNode unitNode = new UnitNode();
 				    unitNode.Text = sourceFileName;
                     unitNode.Tag = unitNode;
                     unitNode.sourceFile = sourceFilePath;
                     unitNode.CheckState = x.selectedSourceFiles.Contains(sourceFileName) ? CheckState.Checked : CheckState.Unchecked;
                     unitNode.module = x;
-				    moduleNode.Nodes.Add(unitNode);
+				    
 
 				    foreach(string routine in project.coveragePointList.Where(y => y.sourceFile.Contains(sourceFileName)).Select(y => y.routineName).Distinct())
 				    {
-					    RoutineNode routineNode = new RoutineNode();
-					    routineNode.Text = routine;
-                        routineNode.Tag = routineNode;
-                        routineNode.sourceFile = sourceFilePath;
-                        routineNode.CheckState = x.selectedRoutines.Contains(routine) ? CheckState.Checked : CheckState.Unchecked;
-                        routineNode.module = x;
-                        unitNode.Nodes.Add(routineNode);                        
-				    }
-			    }
-			}
+						addThisRoutine = false;
+						
+						if (doFiltering)
+						{
+							if(searchPattern.Where(y => routine.ToLower().Contains(y)).Count() > 0)
+								{
+									addThisRoutine = true;
+									addThisUnit = true;
+									addThisModule = true;
+								}
+						}
+						else
+							addThisRoutine = true;
 
+						if(addThisRoutine)
+						{
+							RoutineNode routineNode = new RoutineNode();
+							routineNode.Text = routine;
+							routineNode.Tag = routineNode;
+							routineNode.sourceFile = sourceFilePath;
+							routineNode.CheckState = x.selectedRoutines.Contains(routine) ? CheckState.Checked : CheckState.Unchecked;
+							routineNode.module = x;
+							unitNode.Nodes.Add(routineNode);    
+						}                    
+				    }
+
+					if(addThisUnit)
+						moduleNode.Nodes.Add(unitNode);
+			    }
+
+				if(addThisModule)
+					(tvaRoutines.Model as TreeModel).Nodes.Add(moduleNode);
+			}
 			
+			if(doFiltering)
+				tvaRoutines.ExpandAll();			
 		}
 
 		private void updateProjectInformation()
@@ -147,6 +186,8 @@ namespace dCover.Forms
 				txtHost.Text = selectedModule.host;
 				txtHost.Enabled = selectedModule.isHosted;
 				btnHost.Enabled = selectedModule.isHosted;
+
+				txtDirectory.Text = selectedModule.startDirectory;
 				#endregion
 
 				pnlProjectInformation.Show();
@@ -292,6 +333,7 @@ namespace dCover.Forms
 			selectedModule.isHosted = chkHost.Checked;
 			selectedModule.host = txtHost.Text;
 			selectedModule.parameters = txtParams.Text;
+			selectedModule.startDirectory = txtDirectory.Text;
 		}
 
 		private void btnCancel_Click(object sender, EventArgs e)
@@ -454,6 +496,16 @@ namespace dCover.Forms
         private void tvaRoutines_KeyDown(object sender, KeyEventArgs e)
         {
             validateSelectedPoints();
-        }	
+        }
+
+		private void runApplicationToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			Console.WriteLine(sender.ToString());			
+		}
+
+		private void txtFindRoutines_KeyPress(object sender, KeyPressEventArgs e)
+		{
+			updateProjectOverview();
+		}	
 	}
 }
