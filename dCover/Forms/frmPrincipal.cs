@@ -408,17 +408,19 @@ namespace dCover.Forms
 
 		private void updateSourceCodeSnippets()
 		{
-			foreach (var x in tvaRoutines.SelectedNodes)
+            txtCodeSnippet.SuspendLayout();
+            
+            foreach (var x in tvaRoutines.SelectedNodes)
 			{
 				if (x.Tag is UnitNode)
 				{
 					RichTextBox contentHolder = new RichTextBox();
 					contentHolder.WordWrap = false;
 
-					foreach (string z in File.ReadAllLines((x.Tag as UnitNode).sourceFile))
-					{
-						contentHolder.AppendText((contentHolder.Lines.Count() + 1).ToString("00") + (char)9 + z + "\n");
-					}
+                    {
+                        int i = 0;
+                        contentHolder.Lines = File.ReadAllLines((x.Tag as UnitNode).sourceFile).Select(y => (i++).ToString("0000") + (char)9 + y).ToArray();
+                    }
 
 					contentHolder.SelectAll();
 					contentHolder.SelectionFont = new Font("Verdana", 10);
@@ -439,63 +441,60 @@ namespace dCover.Forms
 					contentHolder.Dispose();
 				}
 				else if (x.Tag is RoutineNode)
-				{
-					RichTextBox contentHolder = new RichTextBox();
-					contentHolder.WordWrap = false;
-					foreach (string z in File.ReadAllLines((x.Tag as RoutineNode).sourceFile))
-					{
-						contentHolder.AppendText((contentHolder.Lines.Count() + 1).ToString("00") + (char)9 + z + "\n");
-					}
+                {
+                    RichTextBox contentHolder = new RichTextBox();
+                    contentHolder.WordWrap = false;
 
-					contentHolder.SelectAll();
-					contentHolder.SelectionFont = new Font("Verdana", 10);
-					List<int> relevantLines = new List<int>();
+                    {
+                        int i = 0;
+                        contentHolder.Lines = File.ReadAllLines((x.Tag as RoutineNode).sourceFile).Select(y => (i++).ToString("0000") + (char)9 + y).ToArray();
+                    }
 
-					foreach (CoveragePoint y in project.coveragePointList.Where(y => (x.Tag as RoutineNode).Text == y.routineName))
-					{
-						for (int i = -3; i < 2; i++)
-							if(y.lineNumber<contentHolder.Lines.Count())
+                    contentHolder.SelectAll();
+                    contentHolder.SelectionFont = new Font("Verdana", 10);
+                    List<int> relevantLines = new List<int>();
+                    
+                    txtCodeSnippet.AppendText("{" + (x.Tag as RoutineNode).Text + "}" + System.Environment.NewLine);
+                    txtCodeSnippet.Select(txtCodeSnippet.GetFirstCharIndexFromLine(txtCodeSnippet.Lines.Count() - 2), txtCodeSnippet.GetFirstCharIndexFromLine(txtCodeSnippet.Lines.Count() - 1));
+                    txtCodeSnippet.SelectionColor = Color.BlueViolet;
+
+                    foreach (CoveragePoint y in project.coveragePointList.Where(y => (x.Tag as RoutineNode).Text == y.routineName))
+                    {
+                        for (int i = -3; i < 2; i++)
+                            if (y.lineNumber + i + 1 < contentHolder.Lines.Count())
                                 relevantLines.Add(y.lineNumber + i);
 
-						contentHolder.Select(contentHolder.GetFirstCharIndexFromLine(y.lineNumber - 1), contentHolder.Lines[y.lineNumber - 1].Length);
+                        contentHolder.SelectAll();
+                        contentHolder.SelectionColor = Color.Black;
 
-						if (y.wasCovered)
-							contentHolder.SelectionColor = Color.Green;
-						else
-							contentHolder.SelectionColor = Color.Red;
+                        contentHolder.Select(contentHolder.GetFirstCharIndexFromLine(y.lineNumber - 1), contentHolder.Lines[y.lineNumber - 1].Length);
 
-                        relevantLines = relevantLines.Distinct().OrderBy(z => z).ToList();
+                        if (y.wasCovered)
+                            contentHolder.SelectionColor = Color.Green;
+                        else
+                            contentHolder.SelectionColor = Color.Red;
+
+                        relevantLines = relevantLines.OrderBy(z => z).ToList();
 
                         contentHolder.Select(contentHolder.GetFirstCharIndexFromLine(relevantLines.First()), contentHolder.GetFirstCharIndexFromLine(relevantLines.Last() + 1) - contentHolder.GetFirstCharIndexFromLine(relevantLines.First()));
 
-                        txtCodeSnippet.AppendText("{" + (x.Tag as RoutineNode).Text + "}" + System.Environment.NewLine);
-                        txtCodeSnippet.Select(txtCodeSnippet.GetFirstCharIndexFromLine(txtCodeSnippet.Lines.Count() - 2), txtCodeSnippet.GetFirstCharIndexFromLine(txtCodeSnippet.Lines.Count() - 1));
-                        txtCodeSnippet.SelectionColor = Color.BlueViolet;
+                        
                         txtCodeSnippet.Select(txtCodeSnippet.Text.Length, 0);
                         txtCodeSnippet.SelectedRtf = contentHolder.SelectedRtf;
                         txtCodeSnippet.AppendText(System.Environment.NewLine);
 
                         relevantLines.Clear();
-					}
+                    }
 
-					/*relevantLines = relevantLines.Distinct().OrderBy(z => z).ToList();
-
-					contentHolder.Select(contentHolder.GetFirstCharIndexFromLine(relevantLines.First()), contentHolder.GetFirstCharIndexFromLine(relevantLines.Last() + 1) - contentHolder.GetFirstCharIndexFromLine(relevantLines.First()));
-
-					txtCodeSnippet.AppendText("{" + (x.Tag as RoutineNode).Text + "}" + System.Environment.NewLine);
-					txtCodeSnippet.Select(txtCodeSnippet.GetFirstCharIndexFromLine(txtCodeSnippet.Lines.Count() - 2), txtCodeSnippet.GetFirstCharIndexFromLine(txtCodeSnippet.Lines.Count() - 1));
-					txtCodeSnippet.SelectionColor = Color.BlueViolet;
-					txtCodeSnippet.Select(txtCodeSnippet.Text.Length, 0);
-					txtCodeSnippet.SelectedRtf = contentHolder.SelectedRtf;
-					txtCodeSnippet.AppendText(System.Environment.NewLine);*/
-
-					contentHolder.Dispose();
-				}
+                    contentHolder.Dispose();
+                }
 				else if (x.Tag is ModuleNode)
 				{
 
 				}
 			}
+
+            txtCodeSnippet.ResumeLayout();
 		}
         
         private void tvaRoutines_SelectionChanged(object sender, EventArgs e)
