@@ -243,6 +243,15 @@ namespace dCover.Forms
 			}
 		}
 
+		private void enumerateLines(ref string[] input)
+		{
+			string enumPadding = "";
+			enumPadding = enumPadding.PadLeft(input.Count().ToString().Length, '0');
+
+			for(var x = 0; x < input.Count(); x++)
+				input[x] = x.ToString(enumPadding) + (char)9 + input[x];
+		}
+
 		private void updateSourceCodeSnippets()
 		{
 			txtCodeSnippet.SuspendLayout();
@@ -254,10 +263,10 @@ namespace dCover.Forms
 					RichTextBox contentHolder = new RichTextBox();
 					contentHolder.WordWrap = false;
 
-					{
-						int i = 0;
-						contentHolder.Lines = File.ReadAllLines((x.Tag as UnitNode).sourceFile).Select(y => (i++).ToString("0000") + (char)9 + y).ToArray();
-					}
+					var linesBuffer = File.ReadAllLines((x.Tag as UnitNode).sourceFile);
+										
+					enumerateLines(ref linesBuffer);					
+					contentHolder.Lines = linesBuffer;
 
 					contentHolder.SelectAll();
 					contentHolder.SelectionFont = new Font("Verdana", 10);
@@ -282,10 +291,10 @@ namespace dCover.Forms
 					RichTextBox contentHolder = new RichTextBox();
 					contentHolder.WordWrap = false;
 
-					{
-						int i = 0;
-						contentHolder.Lines = File.ReadAllLines((x.Tag as RoutineNode).sourceFile).Select(y => (i++).ToString("0000") + (char)9 + y).ToArray();
-					}
+					var linesBuffer = File.ReadAllLines((x.Tag as RoutineNode).sourceFile);
+
+					enumerateLines(ref linesBuffer);
+					contentHolder.Lines = linesBuffer;
 
 					contentHolder.SelectAll();
 					contentHolder.SelectionFont = new Font("Verdana", 10);
