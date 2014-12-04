@@ -282,9 +282,11 @@ namespace dCover.Geral
 								ThreadContext threadContext = new ThreadContext();
 								threadContext.ContextFlags = 0x10001;
 								uint threadHandle = OpenThread(0x001F03FF, false, debugEvent.dwThreadId);
-
+								
+								GetThreadContext(threadHandle, ref threadContext);
 								threadContext.Eip--;
 								SetThreadContext(threadHandle, ref threadContext);
+
 								CloseHandle(threadHandle);
 								#endregion
 
