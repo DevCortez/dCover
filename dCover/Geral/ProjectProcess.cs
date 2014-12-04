@@ -39,6 +39,7 @@ namespace dCover.Geral
 
 		public bool status { get { return debuggingThread == null ? true : debuggingThread.IsAlive; } }
 		private bool breakpointsAreSet = false;
+        private bool isAttaching = false;
 		#endregion
 
 		private unsafe void setInitialBreakpoints()
@@ -134,14 +135,35 @@ namespace dCover.Geral
 			return true;
 		}
 
-		unsafe void debuggingLoop()
+		private void doDebugAttach()
+        {
+            if (!DebugActiveProcess(processId))
+            {
+                Console.WriteLine("Cannot attach to process");
+                return;
+            }
+
+            setInitialBreakpoints();            
+
+            DEBUG_EVENT debugEvent = new DEBUG_EVENT();
+
+            WaitForDebugEvent(out debugEvent, 0xFFFFFFFF);
+            ContinueDebugEvent(debugEvent.dwProcessId, debugEvent.dwThreadId, 0x00010002);
+        }
+        
+        unsafe void debuggingLoop()
 		{
 			uint continueStatus;
 
-			if (!startProcess())
+            if(isAttaching)
+            {
+                doDebugAttach();
+            }
+
+			if (!breakpointsAreSet && !startProcess())
 				return;
 
-			if (!module.isHosted && !module.isService)
+            if (!module.isHosted && !module.isService && !breakpointsAreSet)
 				setInitialBreakpoints();
 
 			while (status)
@@ -320,49 +342,16 @@ namespace dCover.Geral
 		public bool AttachToProcess(Process target, ProjectModule targetModule, Project project)
 		{
 			mainProject = project;
+            module = targetModule;
+            baseAddress = (uint)target.MainModule.BaseAddress;
+            processId = (uint)target.Id;
+            handle = OpenProcess(0x001F0FFF, false, processId);
+            mainProject.runningProcesses.Add(target);
+            isAttaching = true;
 
-			if (!DebugActiveProcess((uint)target.Id))
-			{
-				Console.WriteLine("Cannot attach to process");
-				return false;
-			}
-
-			#region Suspend threads
-			List<ProcessThread> originalStates = (from ProcessThread x in target.Threads select x).ToList();
-
-			foreach (ProcessThread x in target.Threads)
-			{
-				if (x.ThreadState == System.Diagnostics.ThreadState.Running)
-				{
-					uint threadHandle = OpenThread(0x001F03FF, false, (uint)x.Id);
-					SuspendThread(threadHandle);
-					CloseHandle(threadHandle);
-				}
-			}
-			#endregion
-
-			module = targetModule;
-			baseAddress = (uint)target.MainModule.BaseAddress;
-			handle = OpenProcess(0x001F0FFF, false, (uint)target.Id);
-
-			setInitialBreakpoints();
-
-			debuggingThread = new Thread(new ThreadStart(debuggingLoop));
-			debuggingThread.Start();
-
-			#region Resume threads
-			foreach (ProcessThread x in target.Threads)
-			{
-				if (x.ThreadState != (originalStates.Where(y => y.Id == x.Id).First()).ThreadState)
-				{
-					uint threadHandle = OpenThread(0x001F03FF, false, (uint)x.Id);
-					ResumeThread(threadHandle);
-					CloseHandle(threadHandle);
-				}
-			}
-			#endregion
-
-			project.runningProcesses.Add(target);
+            debuggingThread = new Thread(new ThreadStart(debuggingLoop));
+            debuggingThread.Start();
+            
 			return true;
 		}
 
