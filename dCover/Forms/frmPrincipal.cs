@@ -1,89 +1,83 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using System.IO;
+﻿using Aga.Controls.Tree;
 using dCover.Geral;
+using System;
+using System.Collections.Generic;
 using System.Diagnostics;
-using System.Threading;
+using System.Drawing;
+using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
-using System.Runtime.InteropServices;
-using Aga.Controls.Tree;
-using Aga.Controls.Tree.NodeControls;
+using System.Threading;
+using System.Windows.Forms;
 
 namespace dCover.Forms
 {
 	public partial class frmPrincipal : Form
-    {
-        #region Classes
-        private class BaseNode : Node
-        {
-            public ProjectModule module;
-        }
+	{
+		#region Classes
+		private class BaseNode : Node
+		{
+			public ProjectModule module;
+		}
 
-        private class ModuleNode : BaseNode
-        {
-        }
+		private class ModuleNode : BaseNode
+		{
+		}
 
-        private class UnitNode : BaseNode
-        {
-            public string sourceFile;
-        }
+		private class UnitNode : BaseNode
+		{
+			public string sourceFile;
+		}
 
-        private class RoutineNode : BaseNode
-        {
-            public string sourceFile;
-        }
-        #endregion
+		private class RoutineNode : BaseNode
+		{
+			public string sourceFile;
+		}
+		#endregion
 
-        #region Variables
-        private Project project = new Project();
+		#region Variables
+		private Project project = new Project();
 		private Thread processMonitor;
-        #endregion
+		#endregion
 
-        public frmPrincipal()
-        {
-            InitializeComponent();
-            processMonitor = new Thread(new ThreadStart(processMonitorLoop));
-            processMonitor.Start();
+		public frmPrincipal()
+		{
+			InitializeComponent();
+			processMonitor = new Thread(new ThreadStart(processMonitorLoop));
+			processMonitor.Start();
 
-            tvaRoutines.Model = new TreeModel();
-        }
+			tvaRoutines.Model = new TreeModel();
+		}
 
 		private void processMonitorLoop()
 		{
-			while(true)
+			while (true)
 			{
-				if(processMonitorToolStripMenuItem.Checked)
+				if (processMonitorToolStripMenuItem.Checked)
 				{
-					List<string> modulesList = (from x in project.moduleFiles select Path.GetFileName(x.moduleFile).ToLower()).ToList();	
-					List<int> pidList = project.runningProcesses.Select(x => x.Id).ToList();				
+					List<string> modulesList = (from x in project.moduleFiles select Path.GetFileName(x.moduleFile).ToLower()).ToList();
+					List<int> pidList = project.runningProcesses.Select(x => x.Id).ToList();
 					List<Process> processList = Process.GetProcesses().ToList();
 
-					foreach(Process currentProcess in processList)
+					foreach (Process currentProcess in processList)
 					{
 						try
-						{							
-							if(pidList.Contains(currentProcess.Id))
+						{
+							if (pidList.Contains(currentProcess.Id))
 								continue;
-							
-							if(modulesList.Contains(currentProcess.MainModule.ModuleName.ToLower()) && !currentProcess.HasExited)
+
+							if (modulesList.Contains(currentProcess.MainModule.ModuleName.ToLower()) && !currentProcess.HasExited)
 							{
 								//Main module itself should be covered
 								ProjectModule projectModule = project.moduleFiles.Where(x => x.moduleFile.Contains(currentProcess.MainModule.ModuleName)).First();
-                                
-                                if(projectModule.isActive)
-								    new ProjectProcess().AttachToProcess(currentProcess, projectModule, project);
+
+								if (projectModule.isActive)
+									new ProjectProcess().AttachToProcess(currentProcess, projectModule, project);
 							}
 
-							foreach(ProcessModule module in currentProcess.Modules)
+							foreach (ProcessModule module in currentProcess.Modules)
 							{
-								if(modulesList.Contains(module.ModuleName.ToLower()))
+								if (modulesList.Contains(module.ModuleName.ToLower()))
 								{
 									//Attach to process and debug this module
 								}
@@ -95,13 +89,13 @@ namespace dCover.Forms
 						}
 					}
 				}
-				
+
 				Thread.Sleep(0);
 			}
 		}
 
-        #region Interface
-        private void updateProjectOverview()
+		#region Interface
+		private void updateProjectOverview()
 		{
 			clbProject.Items.Clear();
 			(tvaRoutines.Model as TreeModel).Nodes.Clear();
@@ -109,7 +103,7 @@ namespace dCover.Forms
 			bool doFiltering = txtFindRoutines.Text.Length > 0;
 			List<string> searchPattern = txtFindRoutines.Text.ToLower().Split(' ').ToList();
 
-			foreach(ProjectModule x in project.moduleFiles)
+			foreach (ProjectModule x in project.moduleFiles)
 			{
 				string moduleName = Path.GetFileName(x.moduleFile);
 				clbProject.Items.Add(moduleName, x.isActive);
@@ -118,51 +112,51 @@ namespace dCover.Forms
 				bool addThisUnit;
 				bool addThisModule;
 
-				if(doFiltering)
+				if (doFiltering)
 					addThisModule = false;
 				else
 					addThisModule = true;
 
-                ModuleNode moduleNode = new ModuleNode();
-                moduleNode.Text = moduleName;
-                moduleNode.module = x;
-                moduleNode.CheckState = x.isActive ? CheckState.Checked : CheckState.Unchecked;                                               
+				ModuleNode moduleNode = new ModuleNode();
+				moduleNode.Text = moduleName;
+				moduleNode.module = x;
+				moduleNode.CheckState = x.isActive ? CheckState.Checked : CheckState.Unchecked;
 
-                foreach(string sourceFile in project.coveragePointList.Where(y => y.moduleName == moduleName).Select(y => y.sourceFile).Distinct())
-			    {
-				    string sourceFileName = Path.GetFileName(sourceFile);
-                    string sourceFilePath = FileHelper.recursiveFileSearch(sourceFileName, project.sourceFolders.Where(y => y.moduleName == moduleName).Select(y => y.path).First(), 3);
-				    					
-					if(doFiltering)
+				foreach (string sourceFile in project.coveragePointList.Where(y => y.moduleName == moduleName).Select(y => y.sourceFile).Distinct())
+				{
+					string sourceFileName = Path.GetFileName(sourceFile);
+					string sourceFilePath = FileHelper.recursiveFileSearch(sourceFileName, project.sourceFolders.Where(y => y.moduleName == moduleName).Select(y => y.path).First(), 3);
+
+					if (doFiltering)
 						addThisUnit = false;
 					else
 						addThisUnit = true;
-					
-					UnitNode unitNode = new UnitNode();
-				    unitNode.Text = sourceFileName;
-                    unitNode.Tag = unitNode;
-                    unitNode.sourceFile = sourceFilePath;
-                    unitNode.CheckState = x.selectedSourceFiles.Contains(sourceFileName) ? CheckState.Checked : CheckState.Unchecked;
-                    unitNode.module = x;
-				    
 
-				    foreach(string routine in project.coveragePointList.Where(y => y.sourceFile.Contains(sourceFileName)).Select(y => y.routineName).Distinct())
-				    {
+					UnitNode unitNode = new UnitNode();
+					unitNode.Text = sourceFileName;
+					unitNode.Tag = unitNode;
+					unitNode.sourceFile = sourceFilePath;
+					unitNode.CheckState = x.selectedSourceFiles.Contains(sourceFileName) ? CheckState.Checked : CheckState.Unchecked;
+					unitNode.module = x;
+
+
+					foreach (string routine in project.coveragePointList.Where(y => y.sourceFile.Contains(sourceFileName)).Select(y => y.routineName).Distinct())
+					{
 						addThisRoutine = false;
-						
+
 						if (doFiltering)
 						{
-							if(searchPattern.Where(y => routine.ToLower().Contains(y)).Count() > 0)
-								{
-									addThisRoutine = true;
-									addThisUnit = true;
-									addThisModule = true;
-								}
+							if (searchPattern.Where(y => routine.ToLower().Contains(y)).Count() > 0)
+							{
+								addThisRoutine = true;
+								addThisUnit = true;
+								addThisModule = true;
+							}
 						}
 						else
 							addThisRoutine = true;
 
-						if(addThisRoutine)
+						if (addThisRoutine)
 						{
 							RoutineNode routineNode = new RoutineNode();
 							routineNode.Text = routine;
@@ -170,20 +164,20 @@ namespace dCover.Forms
 							routineNode.sourceFile = sourceFilePath;
 							routineNode.CheckState = x.selectedRoutines.Contains(routine) ? CheckState.Checked : CheckState.Unchecked;
 							routineNode.module = x;
-							unitNode.Nodes.Add(routineNode);    
-						}                    
-				    }
+							unitNode.Nodes.Add(routineNode);
+						}
+					}
 
-					if(addThisUnit)
+					if (addThisUnit)
 						moduleNode.Nodes.Add(unitNode);
-			    }
+				}
 
-				if(addThisModule)
+				if (addThisModule)
 					(tvaRoutines.Model as TreeModel).Nodes.Add(moduleNode);
 			}
-			
-			if(doFiltering)
-				tvaRoutines.ExpandAll();			
+
+			if (doFiltering)
+				tvaRoutines.ExpandAll();
 		}
 
 		private void updateProjectInformation()
@@ -191,8 +185,8 @@ namespace dCover.Forms
 			if (clbProject.SelectedItems.Count == 1)
 			{
 				ProjectModule selectedModule = project.moduleFiles.Where(x => x.moduleFile.Contains(clbProject.SelectedItem.ToString())).First();
-				
-				#region Update information labels		
+
+				#region Update information labels
 				lblRoutineCount.Text = project.coveragePointList.Where(
 									   x => selectedModule.moduleFile.Contains(x.moduleName)
 									   ).Select(
@@ -203,16 +197,16 @@ namespace dCover.Forms
 									   x => selectedModule.moduleFile.Contains(x.moduleName)
 									   ).Select(
 									   x => x.sourceFile
-									   ).Distinct().Count().ToString() + " units in project"; 
+									   ).Distinct().Count().ToString() + " units in project";
 
-				lblTotalPoints.Text  = project.coveragePointList.Where(
+				lblTotalPoints.Text = project.coveragePointList.Where(
 									   x => selectedModule.moduleFile.Contains(x.moduleName)
 									   ).Count().ToString() + " coverage points";
 				#endregion
 
 				#region Update project variables in the panel
 				txtApplication.Text = selectedModule.moduleFile;
-				
+
 				txtParams.Text = selectedModule.parameters;
 
 				chkHost.Checked = selectedModule.isHosted;
@@ -231,123 +225,123 @@ namespace dCover.Forms
 			}
 		}
 
-        private void validateSelectedPoints()
-        {
-            foreach (var x in tvaRoutines.AllNodes)
-            {
-                BaseNode buffer = x.Tag as BaseNode;
+		private void validateSelectedPoints()
+		{
+			foreach (var x in tvaRoutines.AllNodes)
+			{
+				BaseNode buffer = x.Tag as BaseNode;
 
-                if (buffer.module.selectedSourceFiles.Contains(buffer.Text) && !(buffer.CheckState == CheckState.Checked))
-                    buffer.module.selectedSourceFiles = buffer.module.selectedSourceFiles.Where(y => y != buffer.Text).ToList();
-                else if (!buffer.module.selectedSourceFiles.Contains(buffer.Text) && (buffer.CheckState == CheckState.Checked))
-                    buffer.module.selectedSourceFiles.Add(buffer.Text);
+				if (buffer.module.selectedSourceFiles.Contains(buffer.Text) && !(buffer.CheckState == CheckState.Checked))
+					buffer.module.selectedSourceFiles = buffer.module.selectedSourceFiles.Where(y => y != buffer.Text).ToList();
+				else if (!buffer.module.selectedSourceFiles.Contains(buffer.Text) && (buffer.CheckState == CheckState.Checked))
+					buffer.module.selectedSourceFiles.Add(buffer.Text);
 
-                if (buffer.module.selectedRoutines.Contains(buffer.Text) && !(buffer.CheckState == CheckState.Checked))
-                    buffer.module.selectedRoutines = buffer.module.selectedRoutines.Where(y => y != buffer.Text).ToList();
-                else if (!buffer.module.selectedRoutines.Contains(buffer.Text) && (buffer.CheckState == CheckState.Checked))
-                    buffer.module.selectedRoutines.Add(buffer.Text);
-            }
-        }
+				if (buffer.module.selectedRoutines.Contains(buffer.Text) && !(buffer.CheckState == CheckState.Checked))
+					buffer.module.selectedRoutines = buffer.module.selectedRoutines.Where(y => y != buffer.Text).ToList();
+				else if (!buffer.module.selectedRoutines.Contains(buffer.Text) && (buffer.CheckState == CheckState.Checked))
+					buffer.module.selectedRoutines.Add(buffer.Text);
+			}
+		}
 
-        private void updateSourceCodeSnippets()
-        {
-            txtCodeSnippet.SuspendLayout();
+		private void updateSourceCodeSnippets()
+		{
+			txtCodeSnippet.SuspendLayout();
 
-            foreach (var x in tvaRoutines.SelectedNodes)
-            {
-                if (x.Tag is UnitNode)
-                {
-                    RichTextBox contentHolder = new RichTextBox();
-                    contentHolder.WordWrap = false;
+			foreach (var x in tvaRoutines.SelectedNodes)
+			{
+				if (x.Tag is UnitNode)
+				{
+					RichTextBox contentHolder = new RichTextBox();
+					contentHolder.WordWrap = false;
 
-                    {
-                        int i = 0;
-                        contentHolder.Lines = File.ReadAllLines((x.Tag as UnitNode).sourceFile).Select(y => (i++).ToString("0000") + (char)9 + y).ToArray();
-                    }
+					{
+						int i = 0;
+						contentHolder.Lines = File.ReadAllLines((x.Tag as UnitNode).sourceFile).Select(y => (i++).ToString("0000") + (char)9 + y).ToArray();
+					}
 
-                    contentHolder.SelectAll();
-                    contentHolder.SelectionFont = new Font("Verdana", 10);
+					contentHolder.SelectAll();
+					contentHolder.SelectionFont = new Font("Verdana", 10);
 
-                    foreach (CoveragePoint y in project.coveragePointList.Where(y => (x.Tag as UnitNode).sourceFile.ToLower().Contains(y.sourceFile.ToLower())))
-                    {
-                        contentHolder.Select(contentHolder.GetFirstCharIndexFromLine(y.lineNumber - 1), contentHolder.Lines[y.lineNumber - 1].Length);
+					foreach (CoveragePoint y in project.coveragePointList.Where(y => (x.Tag as UnitNode).sourceFile.ToLower().Contains(y.sourceFile.ToLower())))
+					{
+						contentHolder.Select(contentHolder.GetFirstCharIndexFromLine(y.lineNumber - 1), contentHolder.Lines[y.lineNumber - 1].Length);
 
-                        if (y.wasCovered)
-                            contentHolder.SelectionColor = Color.Green;
-                        else
-                            contentHolder.SelectionColor = Color.Red;
-                    }
+						if (y.wasCovered)
+							contentHolder.SelectionColor = Color.Green;
+						else
+							contentHolder.SelectionColor = Color.Red;
+					}
 
-                    txtCodeSnippet.Select(txtCodeSnippet.Text.Length, 0);
-                    txtCodeSnippet.SelectedRtf = contentHolder.Rtf;
+					txtCodeSnippet.Select(txtCodeSnippet.Text.Length, 0);
+					txtCodeSnippet.SelectedRtf = contentHolder.Rtf;
 
-                    contentHolder.Dispose();
-                }
-                else if (x.Tag is RoutineNode)
-                {
-                    RichTextBox contentHolder = new RichTextBox();
-                    contentHolder.WordWrap = false;
+					contentHolder.Dispose();
+				}
+				else if (x.Tag is RoutineNode)
+				{
+					RichTextBox contentHolder = new RichTextBox();
+					contentHolder.WordWrap = false;
 
-                    {
-                        int i = 0;
-                        contentHolder.Lines = File.ReadAllLines((x.Tag as RoutineNode).sourceFile).Select(y => (i++).ToString("0000") + (char)9 + y).ToArray();
-                    }
+					{
+						int i = 0;
+						contentHolder.Lines = File.ReadAllLines((x.Tag as RoutineNode).sourceFile).Select(y => (i++).ToString("0000") + (char)9 + y).ToArray();
+					}
 
-                    contentHolder.SelectAll();
-                    contentHolder.SelectionFont = new Font("Verdana", 10);
-                    List<int> relevantLines = new List<int>();
+					contentHolder.SelectAll();
+					contentHolder.SelectionFont = new Font("Verdana", 10);
+					List<int> relevantLines = new List<int>();
 
-                    txtCodeSnippet.AppendText("{" + (x.Tag as RoutineNode).Text + "}" + System.Environment.NewLine);
-                    txtCodeSnippet.Select(txtCodeSnippet.GetFirstCharIndexFromLine(txtCodeSnippet.Lines.Count() - 2), txtCodeSnippet.GetFirstCharIndexFromLine(txtCodeSnippet.Lines.Count() - 1));
-                    txtCodeSnippet.SelectionColor = Color.BlueViolet;
+					txtCodeSnippet.AppendText("{" + (x.Tag as RoutineNode).Text + "}" + System.Environment.NewLine);
+					txtCodeSnippet.Select(txtCodeSnippet.GetFirstCharIndexFromLine(txtCodeSnippet.Lines.Count() - 2), txtCodeSnippet.GetFirstCharIndexFromLine(txtCodeSnippet.Lines.Count() - 1));
+					txtCodeSnippet.SelectionColor = Color.BlueViolet;
 
-                    foreach (CoveragePoint y in project.coveragePointList.Where(y => (x.Tag as RoutineNode).Text == y.routineName))
-                    {
-                        for (int i = -3; i < 2; i++)
-                            if (y.lineNumber + i + 1 < contentHolder.Lines.Count())
-                                relevantLines.Add(y.lineNumber + i);
+					foreach (CoveragePoint y in project.coveragePointList.Where(y => (x.Tag as RoutineNode).Text == y.routineName))
+					{
+						for (int i = -3; i < 2; i++)
+							if (y.lineNumber + i + 1 < contentHolder.Lines.Count())
+								relevantLines.Add(y.lineNumber + i);
 
-                        contentHolder.SelectAll();
-                        contentHolder.SelectionColor = Color.Black;
+						contentHolder.SelectAll();
+						contentHolder.SelectionColor = Color.Black;
 
-                        contentHolder.Select(contentHolder.GetFirstCharIndexFromLine(y.lineNumber - 1), contentHolder.Lines[y.lineNumber - 1].Length);
+						contentHolder.Select(contentHolder.GetFirstCharIndexFromLine(y.lineNumber - 1), contentHolder.Lines[y.lineNumber - 1].Length);
 
-                        if (y.wasCovered)
-                            contentHolder.SelectionColor = Color.Green;
-                        else
-                            contentHolder.SelectionColor = Color.Red;
+						if (y.wasCovered)
+							contentHolder.SelectionColor = Color.Green;
+						else
+							contentHolder.SelectionColor = Color.Red;
 
-                        relevantLines = relevantLines.OrderBy(z => z).ToList();
+						relevantLines = relevantLines.OrderBy(z => z).ToList();
 
-                        contentHolder.Select(contentHolder.GetFirstCharIndexFromLine(relevantLines.First()), contentHolder.GetFirstCharIndexFromLine(relevantLines.Last() + 1) - contentHolder.GetFirstCharIndexFromLine(relevantLines.First()));
+						contentHolder.Select(contentHolder.GetFirstCharIndexFromLine(relevantLines.First()), contentHolder.GetFirstCharIndexFromLine(relevantLines.Last() + 1) - contentHolder.GetFirstCharIndexFromLine(relevantLines.First()));
 
 
-                        txtCodeSnippet.Select(txtCodeSnippet.Text.Length, 0);
-                        txtCodeSnippet.SelectedRtf = contentHolder.SelectedRtf;
-                        txtCodeSnippet.AppendText(System.Environment.NewLine);
+						txtCodeSnippet.Select(txtCodeSnippet.Text.Length, 0);
+						txtCodeSnippet.SelectedRtf = contentHolder.SelectedRtf;
+						txtCodeSnippet.AppendText(System.Environment.NewLine);
 
-                        relevantLines.Clear();
-                    }
+						relevantLines.Clear();
+					}
 
-                    contentHolder.Dispose();
-                }
-                else if (x.Tag is ModuleNode)
-                {
+					contentHolder.Dispose();
+				}
+				else if (x.Tag is ModuleNode)
+				{
 
-                }
-            }
+				}
+			}
 
-            txtCodeSnippet.ResumeLayout();
-        }
-        #endregion
+			txtCodeSnippet.ResumeLayout();
+		}
+		#endregion
 
-        #region Form events
-        private unsafe void frmPrincipal_Load(object sender, EventArgs e)
+		#region Form events
+		private unsafe void frmPrincipal_Load(object sender, EventArgs e)
 		{
 			foreach (Match param in Regex.Matches(Environment.CommandLine, @"\s+[\-\/\\](.)\:?((?(?=\"")(\""[^""]*)|([^\s]*)))"))
-            {
-                #region Command line
-				switch(param.Groups[1].Value)
+			{
+				#region Command line
+				switch (param.Groups[1].Value)
 				{
 					case "w":
 						{
@@ -380,17 +374,17 @@ namespace dCover.Forms
 						}
 				}
 				#endregion
-            }
+			}
 		}
 
-        private void frmPrincipal_FormClosing(object sender, FormClosingEventArgs e)
-        {
-            Environment.Exit(0);
-        }
-        #endregion
+		private void frmPrincipal_FormClosing(object sender, FormClosingEventArgs e)
+		{
+			Environment.Exit(0);
+		}
+		#endregion
 
-        #region ToolStripMenu
-        private void openToolStripMenuItem_Click(object sender, EventArgs e)
+		#region ToolStripMenu
+		private void openToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			ProjectLoader.LoadNewDelphiProject(project);
 			updateProjectOverview();
@@ -403,8 +397,8 @@ namespace dCover.Forms
 			saveDialog.Filter = "dCover workspace|*.dcw";
 			saveDialog.CheckPathExists = true;
 			saveDialog.DefaultExt = ".dcw";
-			
-			if(saveDialog.ShowDialog() != DialogResult.OK)
+
+			if (saveDialog.ShowDialog() != DialogResult.OK)
 				return;
 
 			project.SaveToFile(saveDialog.FileName);
@@ -413,13 +407,13 @@ namespace dCover.Forms
 		private void loadWorkspaceToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			project = new Project();
-			
+
 			OpenFileDialog loadDialog = new OpenFileDialog();
 			loadDialog.Title = "Load workspace";
 			loadDialog.Filter = "dCover workspace|*.dcw";
 			loadDialog.CheckFileExists = true;
 
-			if(loadDialog.ShowDialog() != DialogResult.OK)
+			if (loadDialog.ShowDialog() != DialogResult.OK)
 				return;
 
 			project.LoadFromFile(loadDialog.FileName);
@@ -435,13 +429,13 @@ namespace dCover.Forms
 
 		private void runSelectedToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			foreach(var x in clbProject.CheckedItems)
-				new ProjectProcess().CreateProcess(project.moduleFiles.Where(y => y.moduleFile.Contains(x.ToString())).First() , project);
+			foreach (var x in clbProject.CheckedItems)
+				new ProjectProcess().CreateProcess(project.moduleFiles.Where(y => y.moduleFile.Contains(x.ToString())).First(), project);
 		}
 
 		private void terminateAllToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			foreach(Process x in project.runningProcesses)
+			foreach (Process x in project.runningProcesses)
 				try
 				{
 					x.Kill();
@@ -452,50 +446,50 @@ namespace dCover.Forms
 				}
 		}
 
-        private void runApplicationToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            Console.WriteLine(sender.ToString());
-        }
-        #endregion
+		private void runApplicationToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			Console.WriteLine(sender.ToString());
+		}
+		#endregion
 
-        #region tvaRoutines
-        private void tvaRoutines_SelectionChanged(object sender, EventArgs e)
-        {
-            txtCodeSnippet.Clear();
+		#region tvaRoutines
+		private void tvaRoutines_SelectionChanged(object sender, EventArgs e)
+		{
+			txtCodeSnippet.Clear();
 
-            updateSourceCodeSnippets();
-        }
+			updateSourceCodeSnippets();
+		}
 
-        private void tvaRoutines_Click(object sender, EventArgs e)
-        {
-            validateSelectedPoints();
-        }
+		private void tvaRoutines_Click(object sender, EventArgs e)
+		{
+			validateSelectedPoints();
+		}
 
-        private void tvaRoutines_KeyDown(object sender, KeyEventArgs e)
-        {
-            validateSelectedPoints();
-        }
-        #endregion
+		private void tvaRoutines_KeyDown(object sender, KeyEventArgs e)
+		{
+			validateSelectedPoints();
+		}
+		#endregion
 
-        #region txtFindRoutines
-        private void txtFindRoutines_KeyPress(object sender, KeyPressEventArgs e)
-        {
-            updateProjectOverview();
-        }
+		#region txtFindRoutines
+		private void txtFindRoutines_KeyPress(object sender, KeyPressEventArgs e)
+		{
+			updateProjectOverview();
+		}
 
-        private void txtFindRoutines_Enter(object sender, EventArgs e)
-        {
-            txtFindRoutines.SetBounds(txtFindRoutines.Location.X, txtFindRoutines.Location.Y, 200, 20);
-        }
+		private void txtFindRoutines_Enter(object sender, EventArgs e)
+		{
+			txtFindRoutines.SetBounds(txtFindRoutines.Location.X, txtFindRoutines.Location.Y, 200, 20);
+		}
 
-        private void txtFindRoutines_Leave(object sender, EventArgs e)
-        {
-            if (txtFindRoutines.Text.Length == 0)
-                txtFindRoutines.SetBounds(txtFindRoutines.Location.X, txtFindRoutines.Location.Y, 20, 20);
-        }
-        #endregion
+		private void txtFindRoutines_Leave(object sender, EventArgs e)
+		{
+			if (txtFindRoutines.Text.Length == 0)
+				txtFindRoutines.SetBounds(txtFindRoutines.Location.X, txtFindRoutines.Location.Y, 20, 20);
+		}
+		#endregion
 
-        private void clbProject_SelectedValueChanged(object sender, EventArgs e)
+		private void clbProject_SelectedValueChanged(object sender, EventArgs e)
 		{
 			updateProjectInformation();
 		}
@@ -509,7 +503,7 @@ namespace dCover.Forms
 		private void btnSave_Click(object sender, EventArgs e)
 		{
 			ProjectModule selectedModule = project.moduleFiles.Where(x => x.moduleFile.Contains(clbProject.SelectedItem.ToString())).First();
-			selectedModule.moduleFile =  txtApplication.Text;
+			selectedModule.moduleFile = txtApplication.Text;
 			selectedModule.isHosted = chkHost.Checked;
 			selectedModule.host = txtHost.Text;
 			selectedModule.parameters = txtParams.Text;
@@ -523,14 +517,14 @@ namespace dCover.Forms
 
 		private void btnApplication_Click(object sender, EventArgs e)
 		{
-			OpenFileDialog findApplication = new OpenFileDialog();			
+			OpenFileDialog findApplication = new OpenFileDialog();
 			ProjectModule selectedModule = project.moduleFiles.Where(x => x.moduleFile.Contains(clbProject.SelectedItem.ToString())).First();
-			
+
 			findApplication.Title = "Find application...";
 			findApplication.Filter = Path.GetFileName(selectedModule.moduleFile) + "|" + Path.GetFileName(selectedModule.moduleFile);
 			findApplication.CheckFileExists = true;
-			
-			if(findApplication.ShowDialog() != DialogResult.OK)
+
+			if (findApplication.ShowDialog() != DialogResult.OK)
 				return;
 
 			txtApplication.Text = findApplication.FileName;
@@ -550,5 +544,5 @@ namespace dCover.Forms
 
 			txtHost.Text = findHost.FileName;
 		}
-    }
+	}
 }

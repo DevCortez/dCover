@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace dCover.Geral
@@ -28,22 +26,25 @@ namespace dCover.Geral
 			List<Tuple<int, int>> validLines = new List<Tuple<int, int>>();
 			List<CoveragePoint> filteredPoints = new List<CoveragePoint>();
 
-            foreach (Match x in Regex.Matches(sourceCode, @"\s(begin|\)?then\s*\n?|except|else|do|repeat)()\s", RegexOptions.IgnoreCase))
+			foreach (Match x in Regex.Matches(sourceCode, @"\s(begin|\)?then\s*\n?|except|else|do|repeat)()\s", RegexOptions.IgnoreCase))
 			{
-                validLines.Add(Tuple.Create(getLineFromPoint(sourceCode, x.Groups[2].Index), getNextTokenLine(sourceCode, x.Groups[2].Index)));
+				validLines.Add(Tuple.Create(getLineFromPoint(sourceCode, x.Groups[2].Index), getNextTokenLine(sourceCode, x.Groups[2].Index)));
 			}
 
-			foreach(CoveragePoint x in points.Where(y => sourceFile.ToLower().Contains(y.sourceFile)))
+			foreach (CoveragePoint x in points.Where(y => sourceFile.ToLower().Contains(y.sourceFile)))
 			{
-                if (validLines.Where(y => x.lineNumber >= y.Item1 && x.lineNumber <= y.Item2).Count() > 0)
-                {
-                    validLines = validLines.Where(y => !(x.lineNumber >= y.Item1 && x.lineNumber <= y.Item2)).ToList();
+				if (validLines.Where(y => x.lineNumber >= y.Item1 && x.lineNumber <= y.Item2).Count() > 0)
+				{
+					validLines = validLines.Where(y => !(x.lineNumber >= y.Item1 && x.lineNumber <= y.Item2)).ToList();
 
-                    filteredPoints.Add(x);
-                }
+					filteredPoints.Add(x);
+				}
 			}
 
-			filteredPoints.AddRange( (from CoveragePoint x in points where !sourceFile.ToLower().Contains(x.sourceFile) select x).ToList() );
+			filteredPoints.AddRange((from CoveragePoint x
+									 in points
+									 where !sourceFile.ToLower().Contains(x.sourceFile)
+									 select x).ToList());
 
 			return filteredPoints;
 		}
