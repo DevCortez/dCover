@@ -16,8 +16,6 @@ namespace dCover.Geral
 
 		private static IEnumerable<FunctionName> getFunctionNames(string fileName)
 		{
-			List<FunctionName> functionNames = new List<FunctionName>();
-
 			string mapFile = File.ReadAllText(fileName);
 
 			int namesSection = Regex.Match(mapFile, "Publics by Name").Index;
@@ -30,17 +28,12 @@ namespace dCover.Geral
 				buffer.offset = Convert.ToInt32("0x" + name.Groups[1].Value, 16);
 				buffer.name = name.Groups[2].Value;
 
-				functionNames.Add(buffer);
+				yield return buffer;
 			}
-
-			functionNames = functionNames.OrderBy(x => -x.offset).ToList();
-			return functionNames;
 		}
 
 		private static IEnumerable<CoveragePoint> getCoveragePoints(string fileName)
 		{
-			List<CoveragePoint> coveragePoints = new List<CoveragePoint>();
-
 			string mapFile = File.ReadAllText(fileName);
 
 			foreach (Match lines in Regex.Matches(mapFile, @"Line numbers for [^\(]*\(([^\)]*)"))
@@ -62,25 +55,26 @@ namespace dCover.Geral
 					buffer.offset = Convert.ToInt32(point.Groups[2].Value, 16);
 					buffer.sourceFile = sourceFileName;
 
-					coveragePoints.Add(buffer);
+					yield return buffer;
 				}
 			}
-
-			return coveragePoints;
 		}
 
-		private static void setFunctionNames(List<CoveragePoint> points, IEnumerable<FunctionName> names)
+		private static void setFunctionNames(List<CoveragePoint> points, List<FunctionName> names)
 		{
-			points.ForEach(x => x.routineName = names.Where(y => x.offset >= y.offset).Select(y => y.name).First());
+			// This is a critical procedure to analyze coverage data and needs performanece thus
+			// it was coded using simple for to improve performance.
+
+			for(var x = names.Count() - 1; x != 0 ; x--)
+				for(var y = 0; y < points.Count; y++)
+					if(points[y].routineName == null && points[y].offset >= names[x].offset)
+						points[y].routineName = names[x].name;
 		}
 
 		public static IEnumerable<CoveragePoint> Parse(string fileName)
 		{
-			List<CoveragePoint> coveragePoints = new List<CoveragePoint>();
-
-			coveragePoints = getCoveragePoints(fileName).ToList();
-			setFunctionNames(coveragePoints, getFunctionNames(fileName));
-
+			IEnumerable<CoveragePoint> coveragePoints = getCoveragePoints(fileName).ToList();						
+			setFunctionNames(coveragePoints.ToList(), getFunctionNames(fileName).OrderBy(x => x.offset).ToList());
 			return coveragePoints;
 		}
 	}
