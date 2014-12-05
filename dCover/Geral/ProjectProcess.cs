@@ -39,7 +39,7 @@ namespace dCover.Geral
 
 		public bool status { get { return debuggingThread == null ? true : debuggingThread.IsAlive; } }
 		private bool breakpointsAreSet = false;
-        private bool isAttaching = false;
+		private bool isAttaching = false;
 		#endregion
 
 		private unsafe void setInitialBreakpoints()
@@ -76,7 +76,7 @@ namespace dCover.Geral
 		private unsafe bool startProcess()
 		{
 			if (!Directory.Exists(module.startDirectory))
-				module.startDirectory = Environment.CurrentDirectory;
+				module.startDirectory = Path.GetDirectoryName(module.moduleFile);
 
 			if (module.isHosted)
 			{
@@ -85,7 +85,6 @@ namespace dCover.Geral
 				string kernel32dll = "kernel32.dll";
 				string loadLibraryAProc = "LoadLibraryA";
 				uint kernel32Handle;
-
 				uint loadLibraryAddress;
 
 				fixed (void* k32dll = Encoding.ASCII.GetBytes(kernel32dll))
@@ -136,46 +135,33 @@ namespace dCover.Geral
 		}
 
 		private void doDebugAttach()
-        {
-            if (!DebugActiveProcess(processId))
-            {
-                Console.WriteLine("Cannot attach to process");
-                return;
-            }
+		{
+			if (!DebugActiveProcess(processId))
+			{
+				Console.WriteLine("Cannot attach to process");
+				return;
+			}
 
-            setInitialBreakpoints();            
+			setInitialBreakpoints();
 
-            DEBUG_EVENT debugEvent = new DEBUG_EVENT();
+			DEBUG_EVENT debugEvent = new DEBUG_EVENT();
 
-            WaitForDebugEvent(out debugEvent, 0xFFFFFFFF);
-            ContinueDebugEvent(debugEvent.dwProcessId, debugEvent.dwThreadId, 0x00010002);
-        }
-        
-        unsafe void debuggingLoop()
+			WaitForDebugEvent(out debugEvent, 0xFFFFFFFF);
+			ContinueDebugEvent(debugEvent.dwProcessId, debugEvent.dwThreadId, 0x00010002);
+		}
+
+		private unsafe void debuggingLoop()
 		{
 			uint continueStatus;
-
-            if(isAttaching)
-            {
-                doDebugAttach();
-            }
-
-			if (!breakpointsAreSet && !startProcess())
-				return;
-
-            if (!module.isHosted && !module.isService && !breakpointsAreSet)
-				setInitialBreakpoints();
-
 			while (status)
 			{
 				DEBUG_EVENT debugEvent = new DEBUG_EVENT();
+				continueStatus = 0x00010002;
 
 				if (!WaitForDebugEvent(out debugEvent, 0xFFFFFFFF))
 					continue;
 
-				continueStatus = 0x00010002;
-
-				#region Hosted module breakpoint watcher
+				#region Hosted module breakpoint watcher				
 				if (!breakpointsAreSet)
 				{
 					if (module.isHosted)
@@ -196,7 +182,6 @@ namespace dCover.Geral
 				}
 				#endregion
 
-				#region Debug event handle
 				switch (debugEvent.dwDebugEventCode)
 				{
 					case LOAD_DLL_DEBUG_EVENT:
@@ -204,8 +189,6 @@ namespace dCover.Geral
 							#region LOAD_DLL_DEBUG_EVENT
 							if (debugEvent.LoadDll.lpImageName == 0)
 								break;
-
-							#region Check modules being loaded
 
 							#region Read dll name
 							byte[] dllNameBuffer;
@@ -262,8 +245,6 @@ namespace dCover.Geral
 
 							break;
 							#endregion
-
-							#endregion
 						}
 
 					case EXIT_PROCESS_DEBUG_EVENT:
@@ -304,7 +285,7 @@ namespace dCover.Geral
 								ThreadContext threadContext = new ThreadContext();
 								threadContext.ContextFlags = 0x10001;
 								uint threadHandle = OpenThread(0x001F03FF, false, debugEvent.dwThreadId);
-								
+
 								GetThreadContext(threadHandle, ref threadContext);
 								threadContext.Eip--;
 								SetThreadContext(threadHandle, ref threadContext);
@@ -319,10 +300,25 @@ namespace dCover.Geral
 							#endregion
 						}
 				}
-				#endregion
 
 				ContinueDebugEvent(debugEvent.dwProcessId, debugEvent.dwThreadId, continueStatus);
 			}
+		}
+
+		private unsafe void doDebugStart()
+		{
+			if (isAttaching)
+			{
+				doDebugAttach();
+			}
+
+			if (!breakpointsAreSet && !startProcess())
+				return;
+
+			if (!module.isHosted && !module.isService && !breakpointsAreSet)
+				setInitialBreakpoints();
+
+			debuggingLoop();
 		}
 
 		public bool CreateProcess(ProjectModule targetModule, Project project)
@@ -332,7 +328,7 @@ namespace dCover.Geral
 			module = targetModule;
 			mainProject = project;
 
-			debuggingThread = new Thread(new ThreadStart(debuggingLoop));
+			debuggingThread = new Thread(new ThreadStart(doDebugStart));
 			debuggingThread.Start();
 
 			ResumeThread(processInformation.hThread);
@@ -342,16 +338,16 @@ namespace dCover.Geral
 		public bool AttachToProcess(Process target, ProjectModule targetModule, Project project)
 		{
 			mainProject = project;
-            module = targetModule;
-            baseAddress = (uint)target.MainModule.BaseAddress;
-            processId = (uint)target.Id;
-            handle = OpenProcess(0x001F0FFF, false, processId);
-            mainProject.runningProcesses.Add(target);
-            isAttaching = true;
+			module = targetModule;
+			baseAddress = (uint)target.MainModule.BaseAddress;
+			processId = (uint)target.Id;
+			handle = OpenProcess(0x001F0FFF, false, processId);
+			mainProject.runningProcesses.Add(target);
+			isAttaching = true;
 
-            debuggingThread = new Thread(new ThreadStart(debuggingLoop));
-            debuggingThread.Start();
-            
+			debuggingThread = new Thread(new ThreadStart(doDebugStart));
+			debuggingThread.Start();
+
 			return true;
 		}
 
@@ -373,10 +369,8 @@ namespace dCover.Geral
 			public readonly uint dwProcessId;
 			public readonly uint dwThreadId;
 
-
 			[MarshalAs(UnmanagedType.ByValArray, SizeConst = 86, ArraySubType = UnmanagedType.U1)]
 			private readonly byte[] debugInfo;
-
 
 			public EXCEPTION_DEBUG_INFO Exception
 			{
