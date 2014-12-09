@@ -38,6 +38,7 @@ namespace dCover.Forms
 		#region Variables
 		private Project project = new Project();
 		private Thread processMonitor;
+		private bool iconFlag = false;
 		#endregion
 
 		public frmPrincipal()
@@ -554,6 +555,16 @@ namespace dCover.Forms
 				return;
 
 			txtHost.Text = findHost.FileName;
+		}
+
+		private void iconAnimator_Tick(object sender, EventArgs e)
+		{
+			if(iconFlag)
+				Icon = dCover.Properties.Resources.Red;
+			else
+				Icon = dCover.Properties.Resources.Green;
+
+			iconFlag = !iconFlag;
 		}
 	}
 }

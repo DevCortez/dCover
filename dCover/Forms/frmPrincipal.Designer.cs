@@ -29,6 +29,7 @@
 		private void InitializeComponent()
 		{
 			this.components = new System.ComponentModel.Container();
+			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmPrincipal));
 			this.menuStrip1 = new System.Windows.Forms.MenuStrip();
 			this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.openToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -60,14 +61,15 @@
 			this.lblParams = new System.Windows.Forms.Label();
 			this.txtParams = new System.Windows.Forms.TextBox();
 			this.tabRoutines = new System.Windows.Forms.TabPage();
-			this.txtFindRoutines = new System.Windows.Forms.TextBox();
 			this.txtCodeSnippet = new System.Windows.Forms.RichTextBox();
 			this.splitter2 = new System.Windows.Forms.Splitter();
 			this.tvaRoutines = new Aga.Controls.Tree.TreeViewAdv();
 			this.isActive = new Aga.Controls.Tree.NodeControls.NodeCheckBox();
 			this.nodeName = new Aga.Controls.Tree.NodeControls.NodeTextBox();
+			this.txtFindRoutines = new System.Windows.Forms.TextBox();
 			this.cmsProject = new System.Windows.Forms.ContextMenuStrip(this.components);
 			this.runApplicationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.iconAnimator = new System.Windows.Forms.Timer(this.components);
 			this.menuStrip1.SuspendLayout();
 			this.tcMainMenu.SuspendLayout();
 			this.tabProject.SuspendLayout();
@@ -383,17 +385,6 @@
 			this.tabRoutines.Text = "Routines";
 			this.tabRoutines.UseVisualStyleBackColor = true;
 			// 
-			// txtFindRoutines
-			// 
-			this.txtFindRoutines.Dock = System.Windows.Forms.DockStyle.Top;
-			this.txtFindRoutines.Location = new System.Drawing.Point(0, 0);
-			this.txtFindRoutines.Name = "txtFindRoutines";
-			this.txtFindRoutines.Size = new System.Drawing.Size(479, 20);
-			this.txtFindRoutines.TabIndex = 5;
-			this.txtFindRoutines.Enter += new System.EventHandler(this.txtFindRoutines_Enter);
-			this.txtFindRoutines.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtFindRoutines_KeyPress);
-			this.txtFindRoutines.Leave += new System.EventHandler(this.txtFindRoutines_Leave);
-			// 
 			// txtCodeSnippet
 			// 
 			this.txtCodeSnippet.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
@@ -458,6 +449,17 @@
 			this.nodeName.LeftMargin = 3;
 			this.nodeName.ParentColumn = null;
 			// 
+			// txtFindRoutines
+			// 
+			this.txtFindRoutines.Dock = System.Windows.Forms.DockStyle.Top;
+			this.txtFindRoutines.Location = new System.Drawing.Point(0, 0);
+			this.txtFindRoutines.Name = "txtFindRoutines";
+			this.txtFindRoutines.Size = new System.Drawing.Size(479, 20);
+			this.txtFindRoutines.TabIndex = 5;
+			this.txtFindRoutines.Enter += new System.EventHandler(this.txtFindRoutines_Enter);
+			this.txtFindRoutines.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtFindRoutines_KeyPress);
+			this.txtFindRoutines.Leave += new System.EventHandler(this.txtFindRoutines_Leave);
+			// 
 			// cmsProject
 			// 
 			this.cmsProject.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -472,6 +474,12 @@
 			this.runApplicationToolStripMenuItem.Text = "Run application";
 			this.runApplicationToolStripMenuItem.Click += new System.EventHandler(this.runApplicationToolStripMenuItem_Click);
 			// 
+			// iconAnimator
+			// 
+			this.iconAnimator.Enabled = true;
+			this.iconAnimator.Interval = 1000;
+			this.iconAnimator.Tick += new System.EventHandler(this.iconAnimator_Tick);
+			// 
 			// frmPrincipal
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -479,6 +487,7 @@
 			this.ClientSize = new System.Drawing.Size(487, 365);
 			this.Controls.Add(this.tcMainMenu);
 			this.Controls.Add(this.menuStrip1);
+			this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
 			this.MainMenuStrip = this.menuStrip1;
 			this.MinimumSize = new System.Drawing.Size(100, 100);
 			this.Name = "frmPrincipal";
@@ -540,6 +549,7 @@
 		private System.Windows.Forms.ContextMenuStrip cmsProject;
 		private System.Windows.Forms.ToolStripMenuItem runApplicationToolStripMenuItem;
 		private System.Windows.Forms.TextBox txtFindRoutines;
+		private System.Windows.Forms.Timer iconAnimator;
 	}
 }
 
