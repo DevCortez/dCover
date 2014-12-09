@@ -255,6 +255,7 @@ namespace dCover.Forms
 		private void updateSourceCodeSnippets()
 		{
 			txtCodeSnippet.SuspendLayout();
+			txtCodeSnippet.Hide();
 
 			foreach (var x in tvaRoutines.SelectedNodes)
 			{
@@ -341,6 +342,7 @@ namespace dCover.Forms
 			}
 
 			txtCodeSnippet.ResumeLayout();
+			txtCodeSnippet.Show();
 		}
 		#endregion
 

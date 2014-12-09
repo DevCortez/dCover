@@ -44,6 +44,8 @@
 			this.clbProject = new System.Windows.Forms.CheckedListBox();
 			this.splitter1 = new System.Windows.Forms.Splitter();
 			this.pnlProjectInformation = new System.Windows.Forms.Panel();
+			this.lblDirectory = new System.Windows.Forms.Label();
+			this.txtDirectory = new System.Windows.Forms.TextBox();
 			this.btnCancel = new System.Windows.Forms.Button();
 			this.btnSave = new System.Windows.Forms.Button();
 			this.lblApplication = new System.Windows.Forms.Label();
@@ -58,16 +60,14 @@
 			this.lblParams = new System.Windows.Forms.Label();
 			this.txtParams = new System.Windows.Forms.TextBox();
 			this.tabRoutines = new System.Windows.Forms.TabPage();
+			this.txtFindRoutines = new System.Windows.Forms.TextBox();
 			this.txtCodeSnippet = new System.Windows.Forms.RichTextBox();
 			this.splitter2 = new System.Windows.Forms.Splitter();
 			this.tvaRoutines = new Aga.Controls.Tree.TreeViewAdv();
 			this.isActive = new Aga.Controls.Tree.NodeControls.NodeCheckBox();
 			this.nodeName = new Aga.Controls.Tree.NodeControls.NodeTextBox();
-			this.txtDirectory = new System.Windows.Forms.TextBox();
-			this.lblDirectory = new System.Windows.Forms.Label();
 			this.cmsProject = new System.Windows.Forms.ContextMenuStrip(this.components);
 			this.runApplicationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.txtFindRoutines = new System.Windows.Forms.TextBox();
 			this.menuStrip1.SuspendLayout();
 			this.tcMainMenu.SuspendLayout();
 			this.tabProject.SuspendLayout();
@@ -225,6 +225,24 @@
 			this.pnlProjectInformation.TabIndex = 0;
 			this.pnlProjectInformation.Visible = false;
 			// 
+			// lblDirectory
+			// 
+			this.lblDirectory.AutoSize = true;
+			this.lblDirectory.Location = new System.Drawing.Point(14, 209);
+			this.lblDirectory.Name = "lblDirectory";
+			this.lblDirectory.Size = new System.Drawing.Size(72, 13);
+			this.lblDirectory.TabIndex = 15;
+			this.lblDirectory.Text = "Start directory";
+			// 
+			// txtDirectory
+			// 
+			this.txtDirectory.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+			this.txtDirectory.Location = new System.Drawing.Point(17, 225);
+			this.txtDirectory.Name = "txtDirectory";
+			this.txtDirectory.Size = new System.Drawing.Size(214, 20);
+			this.txtDirectory.TabIndex = 14;
+			// 
 			// btnCancel
 			// 
 			this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
@@ -354,10 +372,10 @@
 			// 
 			// tabRoutines
 			// 
-			this.tabRoutines.Controls.Add(this.txtFindRoutines);
 			this.tabRoutines.Controls.Add(this.txtCodeSnippet);
 			this.tabRoutines.Controls.Add(this.splitter2);
 			this.tabRoutines.Controls.Add(this.tvaRoutines);
+			this.tabRoutines.Controls.Add(this.txtFindRoutines);
 			this.tabRoutines.Location = new System.Drawing.Point(4, 22);
 			this.tabRoutines.Name = "tabRoutines";
 			this.tabRoutines.Size = new System.Drawing.Size(479, 315);
@@ -365,24 +383,35 @@
 			this.tabRoutines.Text = "Routines";
 			this.tabRoutines.UseVisualStyleBackColor = true;
 			// 
+			// txtFindRoutines
+			// 
+			this.txtFindRoutines.Dock = System.Windows.Forms.DockStyle.Top;
+			this.txtFindRoutines.Location = new System.Drawing.Point(0, 0);
+			this.txtFindRoutines.Name = "txtFindRoutines";
+			this.txtFindRoutines.Size = new System.Drawing.Size(479, 20);
+			this.txtFindRoutines.TabIndex = 5;
+			this.txtFindRoutines.Enter += new System.EventHandler(this.txtFindRoutines_Enter);
+			this.txtFindRoutines.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtFindRoutines_KeyPress);
+			this.txtFindRoutines.Leave += new System.EventHandler(this.txtFindRoutines_Leave);
+			// 
 			// txtCodeSnippet
 			// 
 			this.txtCodeSnippet.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
 			this.txtCodeSnippet.DetectUrls = false;
 			this.txtCodeSnippet.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.txtCodeSnippet.Location = new System.Drawing.Point(217, 0);
+			this.txtCodeSnippet.Location = new System.Drawing.Point(217, 20);
 			this.txtCodeSnippet.Name = "txtCodeSnippet";
 			this.txtCodeSnippet.ReadOnly = true;
-			this.txtCodeSnippet.Size = new System.Drawing.Size(262, 315);
+			this.txtCodeSnippet.Size = new System.Drawing.Size(262, 295);
 			this.txtCodeSnippet.TabIndex = 4;
 			this.txtCodeSnippet.Text = "";
 			this.txtCodeSnippet.WordWrap = false;
 			// 
 			// splitter2
 			// 
-			this.splitter2.Location = new System.Drawing.Point(214, 0);
+			this.splitter2.Location = new System.Drawing.Point(214, 20);
 			this.splitter2.Name = "splitter2";
-			this.splitter2.Size = new System.Drawing.Size(3, 315);
+			this.splitter2.Size = new System.Drawing.Size(3, 295);
 			this.splitter2.TabIndex = 3;
 			this.splitter2.TabStop = false;
 			// 
@@ -400,7 +429,7 @@
 			this.tvaRoutines.HighlightColorActive = System.Drawing.SystemColors.Highlight;
 			this.tvaRoutines.HighlightColorInactive = System.Drawing.SystemColors.InactiveBorder;
 			this.tvaRoutines.LineColor = System.Drawing.SystemColors.ControlDark;
-			this.tvaRoutines.Location = new System.Drawing.Point(0, 0);
+			this.tvaRoutines.Location = new System.Drawing.Point(0, 20);
 			this.tvaRoutines.Model = null;
 			this.tvaRoutines.Name = "tvaRoutines";
 			this.tvaRoutines.NodeControls.Add(this.isActive);
@@ -408,7 +437,7 @@
 			this.tvaRoutines.OnVisibleOverride = null;
 			this.tvaRoutines.SelectedNode = null;
 			this.tvaRoutines.SelectionMode = Aga.Controls.Tree.TreeSelectionMode.Multi;
-			this.tvaRoutines.Size = new System.Drawing.Size(214, 315);
+			this.tvaRoutines.Size = new System.Drawing.Size(214, 295);
 			this.tvaRoutines.TabIndex = 1;
 			this.tvaRoutines.Text = "treeViewAdv1";
 			this.tvaRoutines.SelectionChanged += new System.EventHandler(this.tvaRoutines_SelectionChanged);
@@ -429,24 +458,6 @@
 			this.nodeName.LeftMargin = 3;
 			this.nodeName.ParentColumn = null;
 			// 
-			// txtDirectory
-			// 
-			this.txtDirectory.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-			this.txtDirectory.Location = new System.Drawing.Point(17, 225);
-			this.txtDirectory.Name = "txtDirectory";
-			this.txtDirectory.Size = new System.Drawing.Size(214, 20);
-			this.txtDirectory.TabIndex = 14;
-			// 
-			// lblDirectory
-			// 
-			this.lblDirectory.AutoSize = true;
-			this.lblDirectory.Location = new System.Drawing.Point(14, 209);
-			this.lblDirectory.Name = "lblDirectory";
-			this.lblDirectory.Size = new System.Drawing.Size(72, 13);
-			this.lblDirectory.TabIndex = 15;
-			this.lblDirectory.Text = "Start directory";
-			// 
 			// cmsProject
 			// 
 			this.cmsProject.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -460,16 +471,6 @@
 			this.runApplicationToolStripMenuItem.Size = new System.Drawing.Size(157, 22);
 			this.runApplicationToolStripMenuItem.Text = "Run application";
 			this.runApplicationToolStripMenuItem.Click += new System.EventHandler(this.runApplicationToolStripMenuItem_Click);
-			// 
-			// txtFindRoutines
-			// 
-			this.txtFindRoutines.Location = new System.Drawing.Point(220, 3);
-			this.txtFindRoutines.Name = "txtFindRoutines";
-			this.txtFindRoutines.Size = new System.Drawing.Size(20, 20);
-			this.txtFindRoutines.TabIndex = 5;
-			this.txtFindRoutines.Enter += new System.EventHandler(this.txtFindRoutines_Enter);
-			this.txtFindRoutines.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtFindRoutines_KeyPress);
-			this.txtFindRoutines.Leave += new System.EventHandler(this.txtFindRoutines_Leave);
 			// 
 			// frmPrincipal
 			// 
