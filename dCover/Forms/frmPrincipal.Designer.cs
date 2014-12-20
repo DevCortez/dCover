@@ -70,12 +70,14 @@
 			this.cmsProject = new System.Windows.Forms.ContextMenuStrip(this.components);
 			this.runApplicationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.iconAnimator = new System.Windows.Forms.Timer(this.components);
+			this.panel1 = new System.Windows.Forms.Panel();
 			this.menuStrip1.SuspendLayout();
 			this.tcMainMenu.SuspendLayout();
 			this.tabProject.SuspendLayout();
 			this.pnlProjectInformation.SuspendLayout();
 			this.tabRoutines.SuspendLayout();
 			this.cmsProject.SuspendLayout();
+			this.panel1.SuspendLayout();
 			this.SuspendLayout();
 			// 
 			// menuStrip1
@@ -376,8 +378,7 @@
 			// 
 			this.tabRoutines.Controls.Add(this.txtCodeSnippet);
 			this.tabRoutines.Controls.Add(this.splitter2);
-			this.tabRoutines.Controls.Add(this.tvaRoutines);
-			this.tabRoutines.Controls.Add(this.txtFindRoutines);
+			this.tabRoutines.Controls.Add(this.panel1);
 			this.tabRoutines.Location = new System.Drawing.Point(4, 22);
 			this.tabRoutines.Name = "tabRoutines";
 			this.tabRoutines.Size = new System.Drawing.Size(479, 315);
@@ -390,19 +391,19 @@
 			this.txtCodeSnippet.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
 			this.txtCodeSnippet.DetectUrls = false;
 			this.txtCodeSnippet.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.txtCodeSnippet.Location = new System.Drawing.Point(217, 20);
+			this.txtCodeSnippet.Location = new System.Drawing.Point(203, 0);
 			this.txtCodeSnippet.Name = "txtCodeSnippet";
 			this.txtCodeSnippet.ReadOnly = true;
-			this.txtCodeSnippet.Size = new System.Drawing.Size(262, 295);
+			this.txtCodeSnippet.Size = new System.Drawing.Size(276, 315);
 			this.txtCodeSnippet.TabIndex = 4;
 			this.txtCodeSnippet.Text = "";
 			this.txtCodeSnippet.WordWrap = false;
 			// 
 			// splitter2
 			// 
-			this.splitter2.Location = new System.Drawing.Point(214, 20);
+			this.splitter2.Location = new System.Drawing.Point(200, 0);
 			this.splitter2.Name = "splitter2";
-			this.splitter2.Size = new System.Drawing.Size(3, 295);
+			this.splitter2.Size = new System.Drawing.Size(3, 315);
 			this.splitter2.TabIndex = 3;
 			this.splitter2.TabStop = false;
 			// 
@@ -411,10 +412,11 @@
 			this.tvaRoutines.BackColor = System.Drawing.SystemColors.Window;
 			this.tvaRoutines.BackColor2 = System.Drawing.SystemColors.Window;
 			this.tvaRoutines.BackgroundPaintMode = Aga.Controls.Tree.BackgroundPaintMode.Default;
+			this.tvaRoutines.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
 			this.tvaRoutines.ColumnHeaderHeight = 17;
 			this.tvaRoutines.DefaultToolTipProvider = null;
 			this.tvaRoutines.DisplayDraggingNodes = true;
-			this.tvaRoutines.Dock = System.Windows.Forms.DockStyle.Left;
+			this.tvaRoutines.Dock = System.Windows.Forms.DockStyle.Fill;
 			this.tvaRoutines.DragDropMarkColor = System.Drawing.Color.Black;
 			this.tvaRoutines.GridLineStyle = ((Aga.Controls.Tree.GridLineStyle)((Aga.Controls.Tree.GridLineStyle.Horizontal | Aga.Controls.Tree.GridLineStyle.Vertical)));
 			this.tvaRoutines.HighlightColorActive = System.Drawing.SystemColors.Highlight;
@@ -428,7 +430,7 @@
 			this.tvaRoutines.OnVisibleOverride = null;
 			this.tvaRoutines.SelectedNode = null;
 			this.tvaRoutines.SelectionMode = Aga.Controls.Tree.TreeSelectionMode.Multi;
-			this.tvaRoutines.Size = new System.Drawing.Size(214, 295);
+			this.tvaRoutines.Size = new System.Drawing.Size(200, 295);
 			this.tvaRoutines.TabIndex = 1;
 			this.tvaRoutines.Text = "treeViewAdv1";
 			this.tvaRoutines.SelectionChanged += new System.EventHandler(this.tvaRoutines_SelectionChanged);
@@ -454,7 +456,7 @@
 			this.txtFindRoutines.Dock = System.Windows.Forms.DockStyle.Top;
 			this.txtFindRoutines.Location = new System.Drawing.Point(0, 0);
 			this.txtFindRoutines.Name = "txtFindRoutines";
-			this.txtFindRoutines.Size = new System.Drawing.Size(479, 20);
+			this.txtFindRoutines.Size = new System.Drawing.Size(200, 20);
 			this.txtFindRoutines.TabIndex = 5;
 			this.txtFindRoutines.Enter += new System.EventHandler(this.txtFindRoutines_Enter);
 			this.txtFindRoutines.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtFindRoutines_KeyPress);
@@ -480,6 +482,16 @@
 			this.iconAnimator.Interval = 1000;
 			this.iconAnimator.Tick += new System.EventHandler(this.iconAnimator_Tick);
 			// 
+			// panel1
+			// 
+			this.panel1.Controls.Add(this.tvaRoutines);
+			this.panel1.Controls.Add(this.txtFindRoutines);
+			this.panel1.Dock = System.Windows.Forms.DockStyle.Left;
+			this.panel1.Location = new System.Drawing.Point(0, 0);
+			this.panel1.Name = "panel1";
+			this.panel1.Size = new System.Drawing.Size(200, 315);
+			this.panel1.TabIndex = 6;
+			// 
 			// frmPrincipal
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -501,8 +513,9 @@
 			this.pnlProjectInformation.ResumeLayout(false);
 			this.pnlProjectInformation.PerformLayout();
 			this.tabRoutines.ResumeLayout(false);
-			this.tabRoutines.PerformLayout();
 			this.cmsProject.ResumeLayout(false);
+			this.panel1.ResumeLayout(false);
+			this.panel1.PerformLayout();
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
@@ -550,6 +563,7 @@
 		private System.Windows.Forms.ToolStripMenuItem runApplicationToolStripMenuItem;
 		private System.Windows.Forms.TextBox txtFindRoutines;
 		private System.Windows.Forms.Timer iconAnimator;
+		private System.Windows.Forms.Panel panel1;
 	}
 }
 
